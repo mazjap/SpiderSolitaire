@@ -18,7 +18,7 @@ struct SpiderSolitaireApp: App {
   
   var body: some Scene {
     WindowGroup {
-      ContentView()
+      StartMenu()
     }
     .modelContainer(sharedModelContainer)
   }

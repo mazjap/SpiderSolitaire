@@ -29,9 +29,23 @@
 		0E176C102C8BF9A800DFDD1C /* SpiderSolitaireUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpiderSolitaireUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		0E176C2A2C8BFCF800DFDD1C /* Exceptions for "SpiderSolitaire" folder in "SpiderSolitaireUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Card.swift,
+				GameState.swift,
+			);
+			target = 0E176C0F2C8BF9A800DFDD1C /* SpiderSolitaireUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0E176BF52C8BF9A600DFDD1C /* SpiderSolitaire */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0E176C2A2C8BFCF800DFDD1C /* Exceptions for "SpiderSolitaire" folder in "SpiderSolitaireUITests" target */,
+			);
 			path = SpiderSolitaire;
 			sourceTree = "<group>";
 		};
