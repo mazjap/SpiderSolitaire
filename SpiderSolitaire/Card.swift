@@ -7,6 +7,12 @@ struct Card: Hashable, Identifiable {
   var isVisible: Bool = false
 }
 
+extension Card: CustomStringConvertible {
+  var description: String {
+    "\(isVisible ? "Visible" : "Hidden") \(value.rawValue) of \(suit.rawValue)s. ID: \(id)"
+  }
+}
+
 extension Card {
   enum Value: String, CaseIterable {
     case ace
@@ -24,10 +30,10 @@ extension Card {
     case king
   }
   
-  enum Suit: String {
+  enum Suit: String, CaseIterable {
     case heart
     case diamond
     case spade
-    case clover
+    case club
   }
 }

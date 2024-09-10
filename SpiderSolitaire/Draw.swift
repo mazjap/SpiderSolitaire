@@ -28,3 +28,53 @@ struct Draw: Equatable, Identifiable {
     self.id = id
   }
 }
+
+extension Draw {
+  subscript(index: Int) -> Card {
+    get {
+      switch index {
+      case 0: return column1
+      case 1: return column2
+      case 2: return column3
+      case 3: return column4
+      case 4: return column5
+      case 5: return column6
+      case 6: return column7
+      case 7: return column8
+      case 8: return column9
+      case 9: return column10
+      default: fatalError("Index out of bounds")
+      }
+    }
+    set {
+      switch index {
+      case 0: column1 = newValue
+      case 1: column2 = newValue
+      case 2: column3 = newValue
+      case 3: column4 = newValue
+      case 4: column5 = newValue
+      case 5: column6 = newValue
+      case 6: column7 = newValue
+      case 7: column8 = newValue
+      case 8: column9 = newValue
+      case 9: column10 = newValue
+      default: fatalError("Index out of bounds")
+      }
+    }
+  }
+}
+
+extension Draw {
+  mutating func makeVisible() {
+    column1.isVisible = true
+    column2.isVisible = true
+    column3.isVisible = true
+    column4.isVisible = true
+    column5.isVisible = true
+    column6.isVisible = true
+    column7.isVisible = true
+    column8.isVisible = true
+    column9.isVisible = true
+    column10.isVisible = true
+  }
+}

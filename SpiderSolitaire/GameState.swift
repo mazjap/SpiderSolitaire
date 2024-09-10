@@ -2,6 +2,7 @@ import Foundation
 
 struct GameState: Equatable {
   var completedSets: [CompletedSet]
+  var draws: [Draw]
   
   var column1: [Card]
   var column2: [Card]
@@ -14,7 +15,8 @@ struct GameState: Equatable {
   var column9: [Card]
   var column10: [Card]
   
-  var draws: [Draw]
+  var moves: Int = 0
+  var seconds: Int = 0
   
   subscript(column: Int) -> [Card] {
     get {
@@ -29,8 +31,7 @@ struct GameState: Equatable {
       case 7: column8
       case 8: column9
       case 9: column10
-      default:
-        fatalError("Column index out of bounds")
+      default: fatalError("Column index out of bounds")
       }
     }
     set {
@@ -45,8 +46,7 @@ struct GameState: Equatable {
       case 7: column8 = newValue
       case 8: column9 = newValue
       case 9: column10 = newValue
-      default:
-        fatalError("Column index out of bounds")
+      default: fatalError("Column index out of bounds")
       }
     }
   }
@@ -113,16 +113,22 @@ struct GameState: Equatable {
 
 extension GameState {
   mutating func mutateColumns(_ mutate: (inout [Card]) -> Void) {
-    mutate(&column1)
-    mutate(&column2)
-    mutate(&column3)
-    mutate(&column4)
-    mutate(&column5)
-    mutate(&column6)
-    mutate(&column7)
-    mutate(&column8)
-    mutate(&column9)
-    mutate(&column10)
+    mutateColumns { cards, _ in
+      mutate(&cards)
+    }
+  }
+  
+  mutating func mutateColumns(_ mutate: (inout [Card], Int) -> Void) {
+    mutate(&column1, 0)
+    mutate(&column2, 1)
+    mutate(&column3, 2)
+    mutate(&column4, 3)
+    mutate(&column5, 4)
+    mutate(&column6, 5)
+    mutate(&column7, 6)
+    mutate(&column8, 7)
+    mutate(&column9, 8)
+    mutate(&column10, 9)
   }
 }
 
@@ -134,8 +140,8 @@ extension GameState {
   }
   
   static func generateFullDeck(suits: GameComplexity) -> [Card] {
-    let deck1 = Card.Value.allCases.map { Card(value: $0, suit: .clover) }
-    let deck2 = Card.Value.allCases.map { Card(value: $0, suit: .clover) }
+    let deck1 = Card.Value.allCases.map { Card(value: $0, suit: .club) }
+    let deck2 = Card.Value.allCases.map { Card(value: $0, suit: .club) }
     let deck3: [Card]
     let deck4: [Card]
     let deck5: [Card]
@@ -145,15 +151,15 @@ extension GameState {
     
     switch suits {
     case .oneSuit:
-      deck3 = Card.Value.allCases.map { Card(value: $0, suit: .clover) }
-      deck4 = Card.Value.allCases.map { Card(value: $0, suit: .clover) }
-      deck5 = Card.Value.allCases.map { Card(value: $0, suit: .clover) }
-      deck6 = Card.Value.allCases.map { Card(value: $0, suit: .clover) }
-      deck7 = Card.Value.allCases.map { Card(value: $0, suit: .clover) }
-      deck8 = Card.Value.allCases.map { Card(value: $0, suit: .clover) }
+      deck3 = Card.Value.allCases.map { Card(value: $0, suit: .club) }
+      deck4 = Card.Value.allCases.map { Card(value: $0, suit: .club) }
+      deck5 = Card.Value.allCases.map { Card(value: $0, suit: .club) }
+      deck6 = Card.Value.allCases.map { Card(value: $0, suit: .club) }
+      deck7 = Card.Value.allCases.map { Card(value: $0, suit: .club) }
+      deck8 = Card.Value.allCases.map { Card(value: $0, suit: .club) }
     case .twoSuits:
-      deck3 = Card.Value.allCases.map { Card(value: $0, suit: .clover, isVisible: false) }
-      deck4 = Card.Value.allCases.map { Card(value: $0, suit: .clover) }
+      deck3 = Card.Value.allCases.map { Card(value: $0, suit: .club, isVisible: false) }
+      deck4 = Card.Value.allCases.map { Card(value: $0, suit: .club) }
       deck5 = Card.Value.allCases.map { Card(value: $0, suit: .heart) }
       deck6 = Card.Value.allCases.map { Card(value: $0, suit: .heart) }
       deck7 = Card.Value.allCases.map { Card(value: $0, suit: .heart) }

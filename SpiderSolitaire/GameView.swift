@@ -1,12 +1,11 @@
 import SwiftUI
 
 struct GameView: View {
-  @State private var gameState: GameState = .empty
-  
-  private let initialState: GameState
+  @State private var model: GameViewModel
   private let backgroundColor = Color.green.mix(with: .black, by: 0.2)
   private let cardShape = RoundedRectangle(cornerRadius: 4)
   
+  private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
   private let outerHorizontalPadding: Double = 4
   private let interCardSpacing: Double = 5
   private var totalCardSpacing: Double { (10 - 1) * interCardSpacing }
@@ -15,7 +14,7 @@ struct GameView: View {
   }
   
   init(gameState: GameState) {
-    self.initialState = gameState
+    self.model = GameViewModel(state: gameState)
   }
   
   var body: some View {
@@ -39,6 +38,9 @@ struct GameView: View {
             Spacer()
             
             drawStack(width: cardWidth, height: cardHeight)
+              .onTapGesture {
+                model.popDrawAndApply()
+              }
           }
           
           Spacer()
@@ -46,12 +48,14 @@ struct GameView: View {
           
           HStack(spacing: interCardSpacing) {
             ForEach(0..<10) { columnNum in
-              let cards = gameState[columnNum]
+              let cards = model[columnNum]
               
               if cards.isEmpty {
                 emptyColumn(width: cardWidth, height: cardHeight)
               } else {
-                CardStackView(cards: cards, cardWidth: cardWidth, cardHeight: cardHeight)
+                CardStackView(cards: cards, cardWidth: cardWidth, cardHeight: cardHeight) { card, offset in
+                  print("\(card) \(offset)")
+                }
               }
             }
           }
@@ -64,11 +68,8 @@ struct GameView: View {
         .padding(.horizontal, outerHorizontalPadding)
       }
     }
-    .onAppear {
-      gameState = initialState
-      gameState.mutateColumns { cards in
-        cards[cards.count - 1].isVisible = true
-      }
+    .onReceive(timer) { date in
+      model.updateTime(from: date)
     }
   }
   
@@ -76,18 +77,20 @@ struct GameView: View {
     HStack {
       Spacer()
       
-      Text("Score")
+      // TODO: - Implement Score
+      Text("Score\n0")
       
       Spacer()
       
-      Text("Time")
+      Text("Time\n\(model.formattedTime)")
       
       Spacer()
       
-      Text("Moves")
+      Text("Moves\n\(model.state.moves)")
       
       Spacer()
     }
+    .multilineTextAlignment(.center)
     .foregroundStyle(.white)
   }
   
@@ -105,7 +108,7 @@ struct GameView: View {
     let subsequentCardOffset: Double = 30
     
     return ZStack {
-      ForEach(Array(gameState.completedSets.enumerated()), id: \.element.id) { (index, set) in
+      ForEach(Array(model.state.completedSets.enumerated()), id: \.element.id) { (index, set) in
         CardView(for: .completedSet(set), width: width, height: height)
           .offset(x: subsequentCardOffset * Double(index))
       }
@@ -117,7 +120,7 @@ struct GameView: View {
     let subsequentCardOffset: Double = 4
     
     return ZStack {
-      ForEach(Array(gameState.draws.enumerated()), id: \.element.id) { (index, set) in
+      ForEach(Array(model.state.draws.enumerated()), id: \.element.id) { (index, set) in
         CardView(for: .hidden, width: width, height: height)
           .offset(x: -subsequentCardOffset * Double(index))
       }
@@ -138,7 +141,7 @@ struct GameView: View {
 
 #Preview {
   var gameState = GameState(suits: .oneSuit)
-//  gameState.completedSets = [CompletedSet(suit: .heart), CompletedSet(suit: .clover)]
+  gameState.completedSets = [CompletedSet(suit: .heart), CompletedSet(suit: .club)]
   
   return GameView(gameState: gameState)
 }
@@ -153,7 +156,7 @@ enum CardData {
     case .card(let card):
       return card
     case .hidden:
-      return Card(value: .ace, suit: .clover, isVisible: false)
+      return Card(value: .ace, suit: .club, isVisible: false)
     case .completedSet(let set):
       return Card(value: .king, suit: set.suit, isVisible: true)
     }
