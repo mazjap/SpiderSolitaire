@@ -50,22 +50,24 @@ struct GameView: View {
           
           HStack(spacing: interCardSpacing) {
             ForEach(0..<10) { columnNum in
-              let cards = model[columnNum]
+              let cardStack = model[columnNum]
               
-              if cards.isEmpty {
+              if cardStack.isEmpty {
                 emptyColumn(width: cardWidth, height: cardHeight)
                   .transition(.scale)
               } else {
-                CardStackView(cards: cards, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: cardWidth, cardHeight: cardHeight, namespace: namespace) {
+                CardStackView(cardStack: cardStack, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: cardWidth, cardHeight: cardHeight, namespace: namespace) {
                   draggingColumn = columnNum
                 } onDragEnd: { draggingCardIndex, offset in
+                  let shouldAnimateReturn: Bool
                   if let moveToColumnIndex = cardStackFrames.first(where: { $0.value.contains(offset) })?.key {
-                    withAnimation {
+                    shouldAnimateReturn = withAnimation {
                       model.moveCards(fromColumn: columnNum, cardIndex: draggingCardIndex, toColumn: moveToColumnIndex)
                     }
-                    return false
+                  } else {
+                    shouldAnimateReturn = true
                   }
-                  return true
+                  return shouldAnimateReturn
                 }
                 .zIndex(draggingColumn == columnNum ? 1 : 0)
               }
@@ -131,7 +133,7 @@ extension GameView {
     
     return ZStack {
       ForEach(Array(model.state.completedSets.enumerated()), id: \.element.id) { (index, set) in
-        CardView(for: .completedSet(set), width: width, height: height, namespace: namespace)
+        CardView(for: .completedSet(set), width: width, height: height, isUsable: true, namespace: namespace)
           .offset(x: subsequentCardOffset * Double(index))
       }
     }
@@ -143,7 +145,7 @@ extension GameView {
     
     return ZStack {
       ForEach(Array(model.state.draws.enumerated()), id: \.element.id) { (index, set) in
-        CardView(for: .hidden, width: width, height: height, namespace: namespace)
+        CardView(for: .hidden, width: width, height: height, isUsable: true, namespace: namespace)
           .offset(x: -subsequentCardOffset * Double(index))
       }
     }

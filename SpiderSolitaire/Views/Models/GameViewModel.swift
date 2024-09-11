@@ -35,22 +35,29 @@ class GameViewModel {
 // MARK: - State mutating functions
 extension GameViewModel {
   func revealTopCardsInAllColumns() {
-    state.mutateColumns { cards in
-      guard !cards.isEmpty else { return }
-      cards[cards.count - 1].isVisible = true
+    state.mutateColumns { column in
+      guard !column.cards.isEmpty else { return }
+      column.cards[column.cards.count - 1].isVisible = true
     }
   }
   
-  func moveCards(fromColumn source: Int, cardIndex: Int, toColumn destination: Int) {
-    let cardsToMove = self[source][cardIndex...]
-    self[source].removeSubrange(cardIndex..<cardsToMove.endIndex)
-    self[destination].append(contentsOf: cardsToMove)
+  func moveCards(fromColumn source: Int, cardIndex: Int, toColumn destination: Int) -> Bool {
+    let cardsToMove = state[source].cards[cardIndex...]
     
-    if !self[source].isEmpty {
-      self[source][self[source].count - 1].isVisible = true
+    guard state[destination].cards.last == nil || state[destination].cards.last?.value == cardsToMove.first?.value.larger else { return true }
+    
+    state[source].removeSubrange(cardIndex..<cardsToMove.endIndex)
+    state[destination].append(contentsOf: cardsToMove)
+    
+    if !state[source].isEmpty {
+      state[source][state[source].cards.count - 1].isVisible = true
     }
     
+    validateIndex(forColumn: source)
+    validateIndex(forColumn: destination)
+    
     incrementMoves()
+    return false
   }
   
   func startTimer() {
@@ -90,11 +97,36 @@ extension GameViewModel {
     
     draw.makeVisible()
     
-    state.mutateColumns { cards, index in
-      cards.append(draw[index])
+    state.mutateColumns { column, index in
+      column.cards.append(draw[index])
+    }
+    
+    for columnIndex in 0..<10 {
+      validateIndex(forColumn: columnIndex)
     }
     
     incrementMoves()
+  }
+  
+  private func validateIndex(forColumn columnIndex: Int) {
+    if self[columnIndex].count > 1 {
+      // FIXME: - Check that suit is the same, or that it alternates between red and black
+      for cardIndex in stride(from: self[columnIndex].count - 2, to: 0, by: -1) {
+        guard self[columnIndex][cardIndex].value != self[columnIndex][cardIndex + 1].value.larger else {
+          continue
+        }
+        
+        self[columnIndex].validityIndex = UInt8(cardIndex + 1)
+        return
+      }
+    } else {
+      self[columnIndex].validityIndex = UInt8(self[columnIndex].count - 1)
+    }
+    
+    print("New valid index for column: \(columnIndex)")
+    for (index, card) in self[columnIndex].cards.enumerated() {
+      print("\(index == self[columnIndex].validityIndex ? "-->" : "   ") \(card)")
+    }
   }
   
   private func updateFormatter() {
@@ -122,13 +154,11 @@ extension GameViewModel {
 
 // MARK: - Model Convenience
 extension GameViewModel {
-  subscript(column: Int) -> [Card] {
+  subscript(column: Int) -> CardStack {
     get {
-      guard 0...9 ~= column else { return [] }
       return state[column]
     }
     set {
-      guard 0...9 ~= column else { return }
       state[column] = newValue
     }
   }

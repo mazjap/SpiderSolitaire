@@ -4,7 +4,7 @@ struct CardStackView: View {
   @State private var currentDragInfo: (index: Int, offset: CGSize)?
   @Binding var frames: [Int : CGRect]
   
-  private let cards: [Card]
+  private let cardStack: CardStack
   private let columnIndex: Int
   private let cardWidth: Double
   private let cardHeight: Double
@@ -15,8 +15,8 @@ struct CardStackView: View {
   
   private let offsets: [Double]
   
-  init(cards: [Card], frames: Binding<[Int : CGRect]>, columnIndex: Int, cardWidth: Double, cardHeight: Double, namespace: Namespace.ID, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGPoint) -> Bool) {
-    self.cards = cards
+  init(cardStack: CardStack, frames: Binding<[Int : CGRect]>, columnIndex: Int, cardWidth: Double, cardHeight: Double, namespace: Namespace.ID, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGPoint) -> Bool) {
+    self.cardStack = cardStack
     self._frames = frames
     self.columnIndex = columnIndex
     self.cardWidth = cardWidth
@@ -31,7 +31,7 @@ struct CardStackView: View {
     
     var workingOffset: Double = 0
     
-    self.offsets = cards.map {
+    self.offsets = cardStack.map {
       let offset = workingOffset
       
       if $0.isVisible {
@@ -59,8 +59,9 @@ struct CardStackView: View {
               return CGSize(width: 0, height: verticalOffset)
             }
           }()
+          let isUsable = index >= Int(validityIndex)
           
-          CardView(for: card, width: cardWidth, height: cardHeight, namespace: namespace)
+          CardView(for: card, width: cardWidth, height: cardHeight, isUsable: isUsable, namespace: namespace)
             .offset(offset)
             .gesture(DragGesture(coordinateSpace: .global)
               .onChanged { value in
@@ -79,7 +80,7 @@ struct CardStackView: View {
                   currentDragInfo = nil
                 }
               },
-                     isEnabled: card.isVisible
+              isEnabled: card.isVisible && isUsable
             )
         }
       }
@@ -92,12 +93,22 @@ struct CardStackView: View {
   }
 }
 
+extension CardStackView {
+  private var cards: [Card] {
+    cardStack.cards
+  }
+  
+  private var validityIndex: UInt8 {
+    min(cardStack.validityIndex, UInt8(cards.count - 1))
+  }
+}
+
 #Preview {
   @Previewable @State var cards = Card.Value.allCases.map { Card(value: $0, suit: .heart) }
   @Previewable @Namespace var namespace
   
   VStack {
-    CardStackView(cards: cards, frames: .constant([:]), columnIndex: 0, cardWidth: 30, cardHeight: 45, namespace: namespace) {
+    CardStackView(cardStack: .init(cards: cards, validityIndex: .max), frames: .constant([:]), columnIndex: 0, cardWidth: 30, cardHeight: 45, namespace: namespace) {
       print("Card(s) dragged")
     } onDragEnd: { card, offset in
       return true

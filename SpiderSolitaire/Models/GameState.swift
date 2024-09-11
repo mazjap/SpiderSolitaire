@@ -4,21 +4,21 @@ struct GameState: Equatable {
   var completedSets: [CompletedSet]
   var draws: [Draw]
   
-  var column1: [Card]
-  var column2: [Card]
-  var column3: [Card]
-  var column4: [Card]
-  var column5: [Card]
-  var column6: [Card]
-  var column7: [Card]
-  var column8: [Card]
-  var column9: [Card]
-  var column10: [Card]
+  var column1: CardStack
+  var column2: CardStack
+  var column3: CardStack
+  var column4: CardStack
+  var column5: CardStack
+  var column6: CardStack
+  var column7: CardStack
+  var column8: CardStack
+  var column9: CardStack
+  var column10: CardStack
   
   var moves: Int = 0
   var seconds: Int = 0
   
-  subscript(column: Int) -> [Card] {
+  subscript(column: Int) -> CardStack {
     get {
       switch column {
       case 0: column1
@@ -51,8 +51,9 @@ struct GameState: Equatable {
     }
   }
   
-  init(completedSets: [CompletedSet] = [], column1: [Card], column2: [Card], column3: [Card], column4: [Card], column5: [Card], column6: [Card], column7: [Card], column8: [Card], column9: [Card], column10: [Card], draws: [Draw]) {
+  init(completedSets: [CompletedSet] = [], column1: CardStack, column2: CardStack, column3: CardStack, column4: CardStack, column5: CardStack, column6: CardStack, column7: CardStack, column8: CardStack, column9: CardStack, column10: CardStack, draws: [Draw]) {
     self.completedSets = completedSets
+    self.draws = draws
     self.column1 = column1
     self.column2 = column2
     self.column3 = column3
@@ -63,41 +64,40 @@ struct GameState: Equatable {
     self.column8 = column8
     self.column9 = column9
     self.column10 = column10
-    self.draws = draws
   }
   
   init(suits: GameComplexity) {
     var fullDeck = Self.generateFullDeck(suits: suits)
     
-    let column1: [Card] = Array(fullDeck.prefix(6))
-    fullDeck.trimPrefix(column1)
+    let column1 = CardStack(cards: Array(fullDeck.prefix(6)), validityIndex: .max)
+    fullDeck.trimPrefix(column1.cards)
     
-    let column2: [Card] = Array(fullDeck.prefix(6))
-    fullDeck.trimPrefix(column2)
+    let column2 = CardStack(cards: Array(fullDeck.prefix(6)), validityIndex: .max)
+    fullDeck.trimPrefix(column2.cards)
     
-    let column3: [Card] = Array(fullDeck.prefix(6))
-    fullDeck.trimPrefix(column3)
+    let column3 = CardStack(cards: Array(fullDeck.prefix(6)), validityIndex: .max)
+    fullDeck.trimPrefix(column3.cards)
     
-    let column4: [Card] = Array(fullDeck.prefix(6))
-    fullDeck.trimPrefix(column4)
+    let column4 = CardStack(cards: Array(fullDeck.prefix(6)), validityIndex: .max)
+    fullDeck.trimPrefix(column4.cards)
     
-    let column5: [Card] = Array(fullDeck.prefix(5))
-    fullDeck.trimPrefix(column5)
+    let column5 = CardStack(cards: Array(fullDeck.prefix(5)), validityIndex: .max)
+    fullDeck.trimPrefix(column5.cards)
     
-    let column6: [Card] = Array(fullDeck.prefix(5))
-    fullDeck.trimPrefix(column6)
+    let column6 = CardStack(cards: Array(fullDeck.prefix(5)), validityIndex: .max)
+    fullDeck.trimPrefix(column6.cards)
     
-    let column7: [Card] = Array(fullDeck.prefix(5))
-    fullDeck.trimPrefix(column7)
+    let column7 = CardStack(cards: Array(fullDeck.prefix(5)), validityIndex: .max)
+    fullDeck.trimPrefix(column7.cards)
     
-    let column8: [Card] = Array(fullDeck.prefix(5))
-    fullDeck.trimPrefix(column8)
+    let column8 = CardStack(cards: Array(fullDeck.prefix(5)), validityIndex: .max)
+    fullDeck.trimPrefix(column8.cards)
     
-    let column9: [Card] = Array(fullDeck.prefix(5))
-    fullDeck.trimPrefix(column9)
+    let column9 = CardStack(cards: Array(fullDeck.prefix(5)), validityIndex: .max)
+    fullDeck.trimPrefix(column9.cards)
     
-    let column10: [Card] = Array(fullDeck.prefix(5))
-    fullDeck.trimPrefix(column10)
+    let column10 = CardStack(cards: Array(fullDeck.prefix(5)), validityIndex: .max)
+    fullDeck.trimPrefix(column10.cards)
     
     let draws: [Draw] = fullDeck.split(every: 10)
       .map { Array($0) }
@@ -108,17 +108,24 @@ struct GameState: Equatable {
     self.init(column1: column1, column2: column2, column3: column3, column4: column4, column5: column5, column6: column6, column7: column7, column8: column8, column9: column9, column10: column10, draws: draws)
   }
   
-  static let empty = GameState(column1: [], column2: [], column3: [], column4: [], column5: [], column6: [], column7: [], column8: [], column9: [], column10: [], draws: [])
+  static let empty = GameState(
+    column1: .empty, column2: .empty,
+    column3: .empty, column4: .empty,
+    column5: .empty, column6: .empty,
+    column7: .empty, column8: .empty,
+    column9: .empty, column10: .empty,
+    draws: []
+  )
 }
 
 extension GameState {
-  mutating func mutateColumns(_ mutate: (inout [Card]) -> Void) {
+  mutating func mutateColumns(_ mutate: (inout CardStack) -> Void) {
     mutateColumns { cards, _ in
       mutate(&cards)
     }
   }
   
-  mutating func mutateColumns(_ mutate: (inout [Card], Int) -> Void) {
+  mutating func mutateColumns(_ mutate: (inout CardStack, Int) -> Void) {
     mutate(&column1, 0)
     mutate(&column2, 1)
     mutate(&column3, 2)

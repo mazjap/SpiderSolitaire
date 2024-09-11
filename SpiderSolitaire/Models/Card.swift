@@ -7,9 +7,13 @@ struct Card: Hashable, Identifiable {
   var isVisible: Bool = false
 }
 
-extension Card: CustomStringConvertible {
+extension Card: CustomStringConvertible, CustomDebugStringConvertible {
   var description: String {
-    "\(isVisible ? "Visible" : "Hidden") \(value.rawValue) of \(suit.rawValue)s. ID: \(id)"
+    "\(isVisible ? "Visible" : "Hidden") \(value.rawValue) of \(suit.rawValue)s"
+  }
+  
+  var debugDescription: String {
+    "\(description). ID: \(id)"
   }
 }
 
@@ -28,6 +32,24 @@ extension Card {
     case jack
     case queen
     case king
+    
+    var larger: Value? {
+      switch self {
+      case .ace: .two
+      case .two: .three
+      case .three: .four
+      case .four: .five
+      case .five: .six
+      case .six: .seven
+      case .seven: .eight
+      case .eight: .nine
+      case .nine: .ten
+      case .ten: .jack
+      case .jack: .queen
+      case .queen: .king
+      case .king: nil
+      }
+    }
   }
   
   enum Suit: String, CaseIterable {
