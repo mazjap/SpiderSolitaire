@@ -54,6 +54,7 @@ struct GameView: View {
               
               if cards.isEmpty {
                 emptyColumn(width: cardWidth, height: cardHeight)
+                  .transition(.scale)
               } else {
                 CardStackView(cards: cards, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: cardWidth, cardHeight: cardHeight, namespace: namespace) {
                   draggingColumn = columnNum
@@ -69,6 +70,7 @@ struct GameView: View {
                 .zIndex(draggingColumn == columnNum ? 1 : 0)
               }
             }
+            .transition(.offset(.zero))
           }
           .frame(height: cardHeight)
           
@@ -129,7 +131,7 @@ extension GameView {
     
     return ZStack {
       ForEach(Array(model.state.completedSets.enumerated()), id: \.element.id) { (index, set) in
-        CardView(for: .completedSet(set), width: width, height: height)
+        CardView(for: .completedSet(set), width: width, height: height, namespace: namespace)
           .offset(x: subsequentCardOffset * Double(index))
       }
     }
@@ -141,7 +143,7 @@ extension GameView {
     
     return ZStack {
       ForEach(Array(model.state.draws.enumerated()), id: \.element.id) { (index, set) in
-        CardView(for: .hidden, width: width, height: height)
+        CardView(for: .hidden, width: width, height: height, namespace: namespace)
           .offset(x: -subsequentCardOffset * Double(index))
       }
     }

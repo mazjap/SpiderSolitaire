@@ -60,9 +60,7 @@ struct CardStackView: View {
             }
           }()
           
-          CardView(for: card, width: cardWidth, height: cardHeight)
-            .transition(.scale(scale: 1))
-            .matchedGeometryEffect(id: card.id, in: namespace)
+          CardView(for: card, width: cardWidth, height: cardHeight, namespace: namespace)
             .offset(offset)
             .gesture(DragGesture(coordinateSpace: .global)
               .onChanged { value in
@@ -104,8 +102,6 @@ struct CardStackView: View {
     } onDragEnd: { card, offset in
       return true
     }
-    
-//    Spacer()
     
     Button("Add Card") {
       cards.append(Card(value: Array(Card.Value.allCases).randomElement()!, suit: Array(Card.Suit.allCases).randomElement()!, isVisible: true))
