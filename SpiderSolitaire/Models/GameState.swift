@@ -1,8 +1,14 @@
 import Foundation
 
+enum Move: Equatable {
+  case draw(id: UUID)
+  case move(columnIndex: UInt8, cardCount: UInt8, destinationIndex: UInt8, didRevealCard: Bool)
+}
+
 struct GameState: Equatable {
   var completedSets: [CompletedSet]
   var draws: [Draw]
+  var previousMoves: [Move]
   
   var column1: CardStack
   var column2: CardStack
@@ -15,8 +21,8 @@ struct GameState: Equatable {
   var column9: CardStack
   var column10: CardStack
   
-  var moves: Int = 0
   var seconds: Int = 0
+  var moveCount: Int = 0
   
   subscript(column: Int) -> CardStack {
     get {
@@ -54,6 +60,8 @@ struct GameState: Equatable {
   init(completedSets: [CompletedSet] = [], column1: CardStack, column2: CardStack, column3: CardStack, column4: CardStack, column5: CardStack, column6: CardStack, column7: CardStack, column8: CardStack, column9: CardStack, column10: CardStack, draws: [Draw]) {
     self.completedSets = completedSets
     self.draws = draws
+    self.previousMoves = [Move]()
+    self.previousMoves.reserveCapacity(100)
     self.column1 = column1
     self.column2 = column2
     self.column3 = column3
@@ -119,12 +127,16 @@ struct GameState: Equatable {
 }
 
 extension GameState {
+  /// Mutates each column using the given closure
+  /// - Parameter mutate: A closure used on each column with only a paramter, cardStack which acts agnostically on each column.
   mutating func mutateColumns(_ mutate: (inout CardStack) -> Void) {
     mutateColumns { cards, _ in
       mutate(&cards)
     }
   }
   
+  /// Mutates each column using the given closure
+  /// - Parameter mutate: A closure used on each column with the following parameters: cardStack - A `CardStack` struct which can be mutated. - index the index of the column being mutated
   mutating func mutateColumns(_ mutate: (inout CardStack, Int) -> Void) {
     mutate(&column1, 0)
     mutate(&column2, 1)
@@ -181,5 +193,17 @@ extension GameState {
     }
     
     return (deck1 + deck2 + deck3 + deck4 + deck5 + deck6 + deck7 + deck8).shuffled()
+  }
+}
+
+
+extension GameState {
+  subscript(column: UInt8) -> CardStack {
+    get {
+      self[Int(column)]
+    }
+    set {
+      self[Int(column)] = newValue
+    }
   }
 }

@@ -43,19 +43,24 @@ extension GameViewModel {
   
   func moveCards(fromColumn source: Int, cardIndex: Int, toColumn destination: Int) -> Bool {
     let cardsToMove = state[source].cards[cardIndex...]
+    let cardsToMoveCount = cardsToMove.count
     
     guard state[destination].cards.last == nil || state[destination].cards.last?.value == cardsToMove.first?.value.larger else { return true }
     
-    state[source].removeSubrange(cardIndex..<cardsToMove.endIndex)
-    state[destination].append(contentsOf: cardsToMove)
+    state[source].cards.removeSubrange(cardIndex..<cardsToMove.endIndex)
+    state[destination].cards.append(contentsOf: cardsToMove)
+    
+    var didRevealCard = false
     
     if !state[source].isEmpty {
-      state[source][state[source].cards.count - 1].isVisible = true
+      didRevealCard = !state[source].cards[state[source].cards.count - 1].isVisible
+      state[source].cards[state[source].cards.count - 1].isVisible = true
     }
     
     validateIndex(forColumn: source)
     validateIndex(forColumn: destination)
     
+    state.previousMoves.append(.move(columnIndex: UInt8(source), cardCount: UInt8(cardsToMoveCount), destinationIndex: UInt8(destination), didRevealCard: didRevealCard))
     incrementMoves()
     return false
   }
@@ -105,6 +110,40 @@ extension GameViewModel {
       validateIndex(forColumn: columnIndex)
     }
     
+    state.previousMoves.append(.draw(id: draw.id))
+    incrementMoves()
+  }
+  
+  func popPreviousMoveAndApply() {
+    switch state.previousMoves.popLast() {
+    case .draw(let id):
+      let defaultCard = Card(value: .ace, suit: .diamond)
+      var draw = Draw(column1: defaultCard, column2: defaultCard, column3: defaultCard, column4: defaultCard, column5: defaultCard, column6: defaultCard, column7: defaultCard, column8: defaultCard, column9: defaultCard, column10: defaultCard, id: id)
+      
+      state.mutateColumns { stack, index in
+        guard let card = stack.cards.popLast() else { return }
+        draw[index] = card
+      }
+      
+      state.draws.append(draw)
+    case let .move(newDestination, cardCount, newSource, shouldHideCard):
+      let cardIndex = state[newSource].count - Int(cardCount)
+      let cardsToMove = state[newSource].cards[cardIndex...]
+      
+      state[newSource].cards.removeSubrange(cardIndex..<cardsToMove.endIndex)
+      
+      if shouldHideCard, !state[newDestination].isEmpty {
+        state[newDestination].cards[state[newDestination].cards.count - 1].isVisible = false
+      }
+      
+      state[newDestination].cards.append(contentsOf: cardsToMove)
+      
+      validateIndex(forColumn: Int(newSource))
+      validateIndex(forColumn: Int(newDestination))
+    case .none:
+      break
+    }
+    
     incrementMoves()
   }
   
@@ -116,16 +155,11 @@ extension GameViewModel {
           continue
         }
         
-        self[columnIndex].validityIndex = UInt8(cardIndex + 1)
+        self[columnIndex].validityIndex = cardIndex + 1
         return
       }
     } else {
-      self[columnIndex].validityIndex = UInt8(self[columnIndex].count - 1)
-    }
-    
-    print("New valid index for column: \(columnIndex)")
-    for (index, card) in self[columnIndex].cards.enumerated() {
-      print("\(index == self[columnIndex].validityIndex ? "-->" : "   ") \(card)")
+      self[columnIndex].validityIndex = self[columnIndex].count - 1
     }
   }
   
@@ -140,7 +174,7 @@ extension GameViewModel {
   }
   
   private func incrementMoves() {
-    state.moves += 1
+    state.moveCount += 1
     startTimer()
   }
 }
@@ -148,18 +182,30 @@ extension GameViewModel {
 // MARK: - Computed Variables
 extension GameViewModel {
   var formattedTime: String {
-    formatter.string(from: DateComponents(second: state.seconds)) ?? String(state.seconds)
+    formatter.string(from: DateComponents(second: Int(state.seconds))) ?? String(state.seconds)
+  }
+  
+  var canUndo: Bool {
+    !state.previousMoves.isEmpty
   }
 }
 
 // MARK: - Model Convenience
 extension GameViewModel {
-  subscript(column: Int) -> CardStack {
+  subscript(column: UInt8) -> CardStack {
     get {
       return state[column]
     }
     set {
       state[column] = newValue
+    }
+  }
+  
+  subscript(column: Int) -> CardStack {
+    get {
+      self[UInt8(column)]
+    } set {
+      self[UInt8(column)] = newValue
     }
   }
 }

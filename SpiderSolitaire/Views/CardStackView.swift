@@ -31,7 +31,7 @@ struct CardStackView: View {
     
     var workingOffset: Double = 0
     
-    self.offsets = cardStack.map {
+    self.offsets = cardStack.cards.map {
       let offset = workingOffset
       
       if $0.isVisible {
@@ -98,8 +98,8 @@ extension CardStackView {
     cardStack.cards
   }
   
-  private var validityIndex: UInt8 {
-    min(cardStack.validityIndex, UInt8(cards.count - 1))
+  private var validityIndex: Int {
+    min(cardStack.validityIndex, cards.count - 1)
   }
 }
 

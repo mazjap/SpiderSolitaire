@@ -102,7 +102,7 @@ extension GameView {
       
       Spacer()
       
-      Text("Moves\n\(model.state.moves)")
+      Text("Moves\n\(model.state.moveCount)")
     }
     .multilineTextAlignment(.center)
     .monospaced()
@@ -113,16 +113,28 @@ extension GameView {
   private var controls: some View {
     HStack {
       Text("1")
+      Spacer()
       Text("2")
-      
-      Button("Print frames") {
-        print(cardStackFrames)
-      }
-      
+      Spacer()
       Text("3")
-      Text("4")
+      Spacer()
+      
+      Button {
+        model.popPreviousMoveAndApply()
+      } label: {
+        Image(systemName: "arrow.uturn.backward")
+          .foregroundStyle(model.canUndo ? .white : .gray)
+      }
     }
     .foregroundStyle(.white)
+    .font(.title2)
+    .padding(.vertical)
+    .padding(.horizontal, 36)
+    .background {
+      RoundedRectangle(cornerRadius: 10)
+        .fill(Color.black.opacity(0.5))
+    }
+    .padding(.horizontal, 25)
   }
 }
 
