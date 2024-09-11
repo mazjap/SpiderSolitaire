@@ -14,8 +14,9 @@ class GameViewModel {
   
   private let formatter: DateComponentsFormatter = {
     let formatter = DateComponentsFormatter()
-    formatter.allowedUnits = [.hour, .minute, .second]
+    formatter.allowedUnits = [.minute, .second]
     formatter.unitsStyle = .positional
+    formatter.zeroFormattingBehavior = .pad
     return formatter
   }()
   
@@ -23,7 +24,7 @@ class GameViewModel {
     self.state = state
     self.initialTime = state.seconds
     
-    revealTopCardsInAllColumns()
+    updateFormatter()
   }
   
   deinit {
@@ -33,21 +34,39 @@ class GameViewModel {
 
 // MARK: - State mutating functions
 extension GameViewModel {
-  private func revealTopCardsInAllColumns() {
+  func revealTopCardsInAllColumns() {
     state.mutateColumns { cards in
       guard !cards.isEmpty else { return }
       cards[cards.count - 1].isVisible = true
     }
   }
   
+  func moveCards(fromColumn source: Int, cardIndex: Int, toColumn destination: Int) {
+    let cardsToMove = self[source][cardIndex...]
+    self[source].removeSubrange(cardIndex..<cardsToMove.endIndex)
+    self[destination].append(contentsOf: cardsToMove)
+    
+    if !self[source].isEmpty {
+      self[source][self[source].count - 1].isVisible = true
+    }
+    
+    incrementMoves()
+  }
+  
   func startTimer() {
+    guard timerCancellable == nil else { return }
+    
     timerLock.lock()
-    defer { timerLock.unlock() }
+    defer { timerLock.unlock()}
     
     // FIXME: - Replace `unowned` with `weak` if timer is ever used elsewhere
     timerCancellable = Timer.publish(every: 1, on: .main, in: .common)
+      .autoconnect()
       .sink { [unowned self] _ in
+        self.elapsedTime += 1
         self.state.seconds = self.initialTime + self.elapsedTime
+        
+        self.updateFormatter()
       }
   }
   
@@ -63,6 +82,7 @@ extension GameViewModel {
     timerLock.lock()
     defer { timerLock.unlock() }
     timerCancellable?.cancel()
+    timerCancellable = nil
   }
   
   func popDrawAndApply() {
@@ -75,6 +95,16 @@ extension GameViewModel {
     }
     
     incrementMoves()
+  }
+  
+  private func updateFormatter() {
+    if state.seconds > 3600 {
+      if !formatter.allowedUnits.contains(.hour) {
+        formatter.allowedUnits.insert(.hour)
+      }
+    } else if formatter.allowedUnits.contains(.hour) {
+      formatter.allowedUnits.remove(.hour)
+    }
   }
   
   private func incrementMoves() {

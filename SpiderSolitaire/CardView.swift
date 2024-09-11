@@ -4,12 +4,24 @@ struct CardView: View {
   private let cardData: CardData
   private let width: Double
   private let height: Double
-  private let cardShape = RoundedRectangle(cornerRadius: 4)
+  private let cardShape: RoundedRectangle
+  private let textFontSize: Double
+  private let imageFontSize: Double
+  private let horizontalBottomPadding: Double
+  private let strokeWidth: Double
   
   init(for cardData: CardData, width: Double, height: Double) {
     self.cardData = cardData
     self.width = width
     self.height = height
+    
+    let minDimension = min(width, height)
+    
+    self.cardShape = RoundedRectangle(cornerRadius: minDimension / 10)
+    self.textFontSize = height / 4.5
+    self.imageFontSize = height / 5
+    self.horizontalBottomPadding = minDimension / 15
+    self.strokeWidth = max(1, minDimension / 30)
   }
   
   init(for card: Card, width: Double, height: Double) {
@@ -28,7 +40,7 @@ struct CardView: View {
     if card.isVisible {
       cardShape
         .fill(.white)
-        .stroke(.black)
+        .stroke(.black, lineWidth: strokeWidth)
         .frame(width: width, height: height)
         .overlay {
           let numRep: String =
@@ -53,12 +65,12 @@ struct CardView: View {
           VStack {
             HStack(spacing: 0) {
               Text("\(numRep)")
-                .font(.system(size: 10))
+                .font(.system(size: textFontSize))
+              
+              Spacer(minLength: 0)
               
               image
-                .font(.system(size: 8))
-              
-              Spacer()
+                .font(.system(size: imageFontSize))
             }
             
             Spacer(minLength: 2)
@@ -66,50 +78,45 @@ struct CardView: View {
             image
               .resizable()
               .scaledToFit()
-            
-            Spacer(minLength: 2)
-            
-            HStack(spacing: 0) {
-              Spacer()
-              
-              Text("\(numRep)")
-                .font(.system(size: 10))
-              
-              image
-                .font(.system(size: 8))
-            }
           }
           .multilineTextAlignment(.center)
           .foregroundStyle(cardContentColor)
-          .padding(.horizontal, 2)
+          .padding([.horizontal, .bottom], horizontalBottomPadding)
         }
     } else {
       ZStack {
-        Color.white
-        
+        Color(red: 0.2, green: 0.6, blue: 1)
+          .clipShape(cardShape)
+          
         Image("card.back")
           .resizable()
           .scaledToFit()
-          .foregroundStyle(Color.blue.mix(with: .white, by: 0.2))
+          .foregroundStyle(.white)
+          .padding(horizontalBottomPadding)
         
         cardShape
-          .stroke(.black)
+          .stroke(.black, lineWidth: strokeWidth)
       }
       .frame(width: width, height: height)
-      .clipShape(cardShape)
     }
   }
 }
 
 #Preview {
-  HStack {
-    let width: Double = 30
-    let height: Double = 45
+  VStack(spacing: 6) {
+    let width: Double = 90
+    let height: Double = 135
     
-    CardView(for: .hidden, width: width, height: height)
-    
-    CardView(for: .completedSet(CompletedSet(suit: .heart)), width: width, height: height)
-    
-    CardView(for: Card(value: .ace, suit: .club, isVisible: true), width: width, height: height)
+    HStack(spacing: 6) {
+      ForEach(Card.Suit.allCases, id: \.rawValue) { suit in
+        VStack(spacing: 6) {
+          CardView(for: Card(value: .ace, suit: suit), width: width, height: height)
+          CardView(for: Card(value: .king, suit: suit, isVisible: true), width: width, height: height)
+          CardView(for: Card(value: .queen, suit: suit, isVisible: true), width: width, height: height)
+          CardView(for: Card(value: .jack, suit: suit, isVisible: true), width: width, height: height)
+          CardView(for: Card(value: .ace, suit: suit, isVisible: true), width: width, height: height)
+        }
+      }
+    }
   }
 }

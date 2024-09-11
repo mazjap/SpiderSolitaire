@@ -2,10 +2,11 @@ import SwiftUI
 
 struct GameView: View {
   @State private var model: GameViewModel
+  @State private var draggingColumn: Int?
+  @State private var cardStackFrames = [Int : CGRect]()
   private let backgroundColor = Color.green.mix(with: .black, by: 0.2)
   private let cardShape = RoundedRectangle(cornerRadius: 4)
   
-  private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
   private let outerHorizontalPadding: Double = 4
   private let interCardSpacing: Double = 5
   private var totalCardSpacing: Double { (10 - 1) * interCardSpacing }
@@ -53,9 +54,16 @@ struct GameView: View {
               if cards.isEmpty {
                 emptyColumn(width: cardWidth, height: cardHeight)
               } else {
-                CardStackView(cards: cards, cardWidth: cardWidth, cardHeight: cardHeight) { card, offset in
-                  print("\(card) \(offset)")
+                CardStackView(cards: cards, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: cardWidth, cardHeight: cardHeight) {
+                  draggingColumn = columnNum
+                } onDragEnd: { draggingCardIndex, offset in
+                  if let moveToColumnIndex = cardStackFrames.first(where: { $0.value.contains(offset) })?.key {
+                    model.moveCards(fromColumn: columnNum, cardIndex: draggingCardIndex, toColumn: moveToColumnIndex)
+                    return false
+                  }
+                  return true
                 }
+                .zIndex(draggingColumn == columnNum ? 1 : 0)
               }
             }
           }
@@ -68,15 +76,16 @@ struct GameView: View {
         .padding(.horizontal, outerHorizontalPadding)
       }
     }
-    .onReceive(timer) { date in
-      model.updateTime(from: date)
+    .onAppear {
+      onGameStart()
     }
   }
-  
+}
+
+// MARK: - Additional Views
+extension GameView {
   private var stats: some View {
     HStack {
-      Spacer()
-      
       // TODO: - Implement Score
       Text("Score\n0")
       
@@ -87,23 +96,31 @@ struct GameView: View {
       Spacer()
       
       Text("Moves\n\(model.state.moves)")
-      
-      Spacer()
     }
     .multilineTextAlignment(.center)
+    .monospaced()
     .foregroundStyle(.white)
+    .padding(.horizontal, 20)
   }
   
   private var controls: some View {
     HStack {
       Text("1")
       Text("2")
+      
+      Button("Print frames") {
+        print(cardStackFrames)
+      }
+      
       Text("3")
       Text("4")
     }
     .foregroundStyle(.white)
   }
-  
+}
+
+// MARK: - View Functions
+extension GameView {
   private func completedSets(width: Double, height: Double) -> some View {
     let subsequentCardOffset: Double = 30
     
@@ -139,9 +156,26 @@ struct GameView: View {
   }
 }
 
+extension GameView {
+  private func onGameStart() {
+    model.revealTopCardsInAllColumns()
+  }
+}
+
 #Preview {
   var gameState = GameState(suits: .oneSuit)
-  gameState.completedSets = [CompletedSet(suit: .heart), CompletedSet(suit: .club)]
+  gameState.completedSets = [
+    //    CompletedSet(suit: .heart),
+    //    CompletedSet(suit: .heart),
+    //    CompletedSet(suit: .club),
+    //    CompletedSet(suit: .club),
+    //    CompletedSet(suit: .diamond),
+    //    CompletedSet(suit: .diamond),
+    //    CompletedSet(suit: .spade),
+    //    CompletedSet(suit: .spade)
+  ]
+  
+  //  gameState.seconds = Int(60.0 * 59.99)
   
   return GameView(gameState: gameState)
 }
