@@ -33,8 +33,8 @@
 		0E176C2A2C8BFCF800DFDD1C /* Exceptions for "SpiderSolitaire" folder in "SpiderSolitaireUITests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Card.swift,
-				GameState.swift,
+				Models/Card.swift,
+				Models/GameState.swift,
 			);
 			target = 0E176C0F2C8BF9A800DFDD1C /* SpiderSolitaireUITests */;
 		};
@@ -402,7 +402,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = SpiderSolitaire/SpiderSolitaire.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SpiderSolitaire/Resources/SpiderSolitaire.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SpiderSolitaire/Preview Content\"";
@@ -441,7 +441,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = SpiderSolitaire/SpiderSolitaire.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SpiderSolitaire/Resources/SpiderSolitaire.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SpiderSolitaire/Preview Content\"";
