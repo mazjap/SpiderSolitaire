@@ -4,6 +4,7 @@ struct GameView: View {
   @State private var model: GameViewModel
   @State private var draggingColumn: Int?
   @State private var cardStackFrames = [Int : CGRect]()
+  @Namespace private var namespace
   private let backgroundColor = Color.green.mix(with: .black, by: 0.2)
   private let cardShape = RoundedRectangle(cornerRadius: 4)
   
@@ -54,11 +55,13 @@ struct GameView: View {
               if cards.isEmpty {
                 emptyColumn(width: cardWidth, height: cardHeight)
               } else {
-                CardStackView(cards: cards, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: cardWidth, cardHeight: cardHeight) {
+                CardStackView(cards: cards, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: cardWidth, cardHeight: cardHeight, namespace: namespace) {
                   draggingColumn = columnNum
                 } onDragEnd: { draggingCardIndex, offset in
                   if let moveToColumnIndex = cardStackFrames.first(where: { $0.value.contains(offset) })?.key {
-                    model.moveCards(fromColumn: columnNum, cardIndex: draggingCardIndex, toColumn: moveToColumnIndex)
+                    withAnimation {
+                      model.moveCards(fromColumn: columnNum, cardIndex: draggingCardIndex, toColumn: moveToColumnIndex)
+                    }
                     return false
                   }
                   return true

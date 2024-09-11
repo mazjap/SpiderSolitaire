@@ -8,17 +8,20 @@ struct CardStackView: View {
   private let columnIndex: Int
   private let cardWidth: Double
   private let cardHeight: Double
+  private let namespace: Namespace.ID
+  
   private let onDragEnd: (Int, CGPoint) -> Bool
   private let onDragStart: () -> Void
   
   private let offsets: [Double]
   
-  init(cards: [Card], frames: Binding<[Int : CGRect]>, columnIndex: Int, cardWidth: Double, cardHeight: Double, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGPoint) -> Bool) {
+  init(cards: [Card], frames: Binding<[Int : CGRect]>, columnIndex: Int, cardWidth: Double, cardHeight: Double, namespace: Namespace.ID, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGPoint) -> Bool) {
     self.cards = cards
     self._frames = frames
     self.columnIndex = columnIndex
     self.cardWidth = cardWidth
     self.cardHeight = cardHeight
+    self.namespace = namespace
     
     self.onDragStart = onDragStart
     self.onDragEnd = onDragEnd
@@ -58,6 +61,8 @@ struct CardStackView: View {
           }()
           
           CardView(for: card, width: cardWidth, height: cardHeight)
+            .transition(.scale(scale: 1))
+            .matchedGeometryEffect(id: card.id, in: namespace)
             .offset(offset)
             .gesture(DragGesture(coordinateSpace: .global)
               .onChanged { value in
@@ -91,9 +96,10 @@ struct CardStackView: View {
 
 #Preview {
   @Previewable @State var cards = Card.Value.allCases.map { Card(value: $0, suit: .heart) }
+  @Previewable @Namespace var namespace
   
   VStack {
-    CardStackView(cards: cards, frames: .constant([:]), columnIndex: 0, cardWidth: 30, cardHeight: 45) {
+    CardStackView(cards: cards, frames: .constant([:]), columnIndex: 0, cardWidth: 30, cardHeight: 45, namespace: namespace) {
       print("Card(s) dragged")
     } onDragEnd: { card, offset in
       return true
