@@ -27,6 +27,7 @@
 		0E176BF32C8BF9A600DFDD1C /* SpiderSolitaire.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpiderSolitaire.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E176C062C8BF9A800DFDD1C /* SpiderSolitaireTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpiderSolitaireTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E176C102C8BF9A800DFDD1C /* SpiderSolitaireUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpiderSolitaireUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E3C11372C9286E700A761F2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -89,6 +90,7 @@
 		0E176BEA2C8BF9A600DFDD1C = {
 			isa = PBXGroup;
 			children = (
+				0E3C11372C9286E700A761F2 /* README.md */,
 				0E176BF52C8BF9A600DFDD1C /* SpiderSolitaire */,
 				0E176C092C8BF9A800DFDD1C /* SpiderSolitaireTests */,
 				0E176C132C8BF9A800DFDD1C /* SpiderSolitaireUITests */,
