@@ -12,6 +12,11 @@
 
 ## Screenshots
 
+<p float="left">
+  <img src="./src/start.png" width="30%" />
+  <img src="./src/card_flip.gif" width="30%" /> 
+  <img src="./src/undo.gif" width="30%" />
+</p>
 
 ## Requirements
 
