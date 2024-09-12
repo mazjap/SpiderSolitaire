@@ -4,9 +4,9 @@ struct GameView: View {
   @State private var model: GameViewModel
   @State private var draggingColumn: Int?
   @State private var cardStackFrames = [Int : CGRect]()
+  @State private var areNewGameOptionsShown = false
   @Namespace private var namespace
   private let backgroundColor = Color.green.mix(with: .black, by: 0.2)
-  private let cardShape = RoundedRectangle(cornerRadius: 4)
   
   private let outerHorizontalPadding: Double = 4
   private let interCardSpacing: Double = 5
@@ -52,25 +52,20 @@ struct GameView: View {
             ForEach(0..<10) { columnNum in
               let cardStack = model[columnNum]
               
-              if cardStack.isEmpty {
-                emptyColumn(width: cardWidth, height: cardHeight)
-                  .transition(.scale)
-              } else {
-                CardStackView(cardStack: cardStack, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: cardWidth, cardHeight: cardHeight, namespace: namespace) {
-                  draggingColumn = columnNum
-                } onDragEnd: { draggingCardIndex, offset in
-                  let shouldAnimateReturn: Bool
-                  if let moveToColumnIndex = cardStackFrames.first(where: { $0.value.contains(offset) })?.key {
-                    shouldAnimateReturn = withAnimation {
-                      model.moveCards(fromColumn: columnNum, cardIndex: draggingCardIndex, toColumn: moveToColumnIndex)
-                    }
-                  } else {
-                    shouldAnimateReturn = true
+              CardStackView(cardStack: cardStack, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: cardWidth, cardHeight: cardHeight, namespace: namespace) {
+                draggingColumn = columnNum
+              } onDragEnd: { draggingCardIndex, offset in
+                let shouldAnimateReturn: Bool
+                if let moveToColumnIndex = cardStackFrames.first(where: { $0.value.contains(offset) })?.key {
+                  shouldAnimateReturn = withAnimation {
+                    model.moveCards(fromColumn: columnNum, cardIndex: draggingCardIndex, toColumn: moveToColumnIndex)
                   }
-                  return shouldAnimateReturn
+                } else {
+                  shouldAnimateReturn = true
                 }
-                .zIndex(draggingColumn == columnNum ? 1 : 0)
+                return shouldAnimateReturn
               }
+              .zIndex(draggingColumn == columnNum ? 1 : 0)
             }
             .transition(.offset(.zero))
           }
@@ -108,28 +103,139 @@ extension GameView {
     .monospaced()
     .foregroundStyle(.white)
     .padding(.horizontal, 20)
+    .confirmationDialog("New Game Difficulty", isPresented: $areNewGameOptionsShown) {
+      Button("One Suit") {
+        model = GameViewModel(state: GameState(suits: .oneSuit))
+        onGameStart()
+      }
+      Button("Two Suits") {
+        model = GameViewModel(state: GameState(suits: .twoSuits))
+        onGameStart()
+      }
+      Button("Four Suits") {
+        model = GameViewModel(state: GameState(suits: .fourSuits))
+        onGameStart()
+      }
+      
+      Button("Cancel", role: .cancel) {}
+    }
   }
   
   private var controls: some View {
     HStack {
-      Text("1")
+      Button {
+        // TODO: - Implement Settings (haptics, colors, default game mode, etc.)
+      } label: {
+        VStack {
+          Image(systemName: "gear")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 30, height: 30)
+          
+          Text("Settings")
+        }
+      }
+      .padding(.trailing, -8)
+      
       Spacer()
-      Text("2")
+      
+      Button {
+        // TODO: - Implement hints
+      } label: {
+        VStack {
+          Image(systemName: "lightbulb.max.fill")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 30, height: 30)
+            .foregroundStyle(.yellow)
+          
+          Text("Hint")
+        }
+      }
+      
       Spacer()
-      Text("3")
+      
+      #if DEBUG
+      Button {
+        // Ugly but useful
+        print("""
+GameState(
+  completedSets: \(model.state.completedSets.map { 
+    "CompletedSet(suit: .\($0.suit.rawValue), id: UUID(uuidString: \($0.id.uuidString))!)"
+  }), 
+  \(model.state.mapColumns { stack, index in
+          "column\(index + 1): CardStack(cards: [\n\(stack.cards.map { "Card(value: .\($0.value), suit: .\($0.suit), id: UUID(uuidString: \"\($0.id.uuidString)\")!, isVisible: \($0.isVisible))" }.joined(separator: ", \n"))], validityIndex: \(stack.validityIndex)), \n"
+  }.joined())
+  draws: [\(model.state.draws.map { draw in
+    "Draw(" + (0..<10).map { "column\($0 + 1): Card(value: .\(draw[$0].value), suit: .\(draw[$0].suit), id: UUID(uuidString: \"\(draw[$0].id.uuidString)\")!, isVisible: \(draw[$0].isVisible))" }.joined(separator: ", \n") + ")"
+  }.joined(separator: ", \n"))],
+  previousMoves: [\(model.state.previousMoves.map {
+    switch $0 {
+    case let .draw(id):
+      ".draw(id: UUID(uuidString: \"\(id.uuidString)\")!)"
+    case let .move(columnIndex, cardCount, destinationIndex, didRevealCard):
+      ".move(columnIndex: \(columnIndex), cardCount: \(cardCount), destinationIndex: \(destinationIndex), didRevealCard: \(didRevealCard))"
+    }
+  }.joined(separator: ", \n"))]
+)
+""")
+      } label: {
+        VStack {
+          Image(systemName: "ladybug.fill")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 30, height: 30)
+          
+          Text("Debug")
+        }
+      }
+      
+      Spacer()
+      #endif
+      
+      Button {
+        areNewGameOptionsShown.toggle()
+      } label: {
+        VStack {
+          ZStack {
+            CardView(for: .hidden, width: 20, height: 30, isUsable: true, namespace: namespace)
+              .rotationEffect(.degrees(20))
+              .offset(x: 10)
+            
+            CardView(for: .hidden, width: 20, height: 30, isUsable: true, namespace: namespace)
+              .rotationEffect(.degrees(-20))
+              .offset(x: -10)
+            
+            CardView(for: .hidden, width: 20, height: 30, isUsable: true, namespace: namespace)
+              .offset(y: -2)
+          }
+          .frame(width: 30, height: 30)
+          .offset(y: 2)
+          
+          Text("Play")
+        }
+      }
+      
       Spacer()
       
       Button {
         model.popPreviousMoveAndApply()
       } label: {
-        Image(systemName: "arrow.uturn.backward")
-          .foregroundStyle(model.canUndo ? .white : .gray)
+        VStack {
+          Image(systemName: "arrow.uturn.backward")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 30, height: 30)
+          
+          Text("Undo")
+        }
+        .foregroundStyle(model.canUndo ? .white : .gray)
       }
     }
     .foregroundStyle(.white)
-    .font(.title2)
-    .padding(.vertical)
-    .padding(.horizontal, 36)
+    .padding(.top, 8)
+    .padding(.bottom, 4)
+    .padding(.horizontal, 20)
     .background {
       RoundedRectangle(cornerRadius: 10)
         .fill(Color.black.opacity(0.5))
@@ -162,16 +268,6 @@ extension GameView {
       }
     }
     .frame(height: height)
-  }
-  
-  private func emptyColumn(width: Double, height: Double) -> some View {
-    cardShape
-      .foregroundStyle(.white.opacity(0.2))
-      .frame(width: width, height: height)
-      .overlay {
-        cardShape
-          .stroke(Color.white, lineWidth: 2)
-      }
   }
 }
 

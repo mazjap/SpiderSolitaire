@@ -51,7 +51,7 @@ extension GameViewModel {
     state[destination].cards.append(contentsOf: cardsToMove)
     
     var didRevealCard = false
-    
+     
     if !state[source].isEmpty {
       didRevealCard = !state[source].cards[state[source].cards.count - 1].isVisible
       state[source].cards[state[source].cards.count - 1].isVisible = true
@@ -126,6 +126,10 @@ extension GameViewModel {
       }
       
       state.draws.append(draw)
+      
+      for i in 0..<10 {
+        validateIndex(forColumn: i)
+      }
     case let .move(newDestination, cardCount, newSource, shouldHideCard):
       let cardIndex = state[newSource].count - Int(cardCount)
       let cardsToMove = state[newSource].cards[cardIndex...]
@@ -150,14 +154,14 @@ extension GameViewModel {
   private func validateIndex(forColumn columnIndex: Int) {
     if self[columnIndex].count > 1 {
       // FIXME: - Check that suit is the same, or that it alternates between red and black
-      for cardIndex in stride(from: self[columnIndex].count - 2, to: 0, by: -1) {
-        guard self[columnIndex][cardIndex].value != self[columnIndex][cardIndex + 1].value.larger else {
-          continue
+      for cardIndex in self[columnIndex].cards.indices.dropLast().reversed() {
+        guard self[columnIndex][cardIndex].value == self[columnIndex][cardIndex + 1].value.larger else {
+          self[columnIndex].validityIndex = cardIndex + 1
+          return
         }
-        
-        self[columnIndex].validityIndex = cardIndex + 1
-        return
       }
+      
+      self[columnIndex].validityIndex = 0
     } else {
       self[columnIndex].validityIndex = self[columnIndex].count - 1
     }

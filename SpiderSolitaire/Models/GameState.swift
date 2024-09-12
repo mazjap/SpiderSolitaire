@@ -57,11 +57,12 @@ struct GameState: Equatable {
     }
   }
   
-  init(completedSets: [CompletedSet] = [], column1: CardStack, column2: CardStack, column3: CardStack, column4: CardStack, column5: CardStack, column6: CardStack, column7: CardStack, column8: CardStack, column9: CardStack, column10: CardStack, draws: [Draw]) {
+  init(completedSets: [CompletedSet] = [], column1: CardStack, column2: CardStack, column3: CardStack, column4: CardStack, column5: CardStack, column6: CardStack, column7: CardStack, column8: CardStack, column9: CardStack, column10: CardStack, draws: [Draw], previousMoves: [Move] = []) {
     self.completedSets = completedSets
     self.draws = draws
-    self.previousMoves = [Move]()
+    self.previousMoves = previousMoves
     self.previousMoves.reserveCapacity(100)
+    
     self.column1 = column1
     self.column2 = column2
     self.column3 = column3
@@ -148,6 +149,30 @@ extension GameState {
     mutate(&column8, 7)
     mutate(&column9, 8)
     mutate(&column10, 9)
+  }
+  
+  func mapColumns<T>(_ body: (CardStack) -> T) -> [T] {
+    mapColumns { cards, _ in
+      body(cards)
+    }
+  }
+  
+  func mapColumns<T>(_ body: (CardStack, Int) -> T) -> [T] {
+    var result = [T]()
+    result.reserveCapacity(10)
+    
+    result.append(body(column1, 0))
+    result.append(body(column2, 1))
+    result.append(body(column3, 2))
+    result.append(body(column4, 3))
+    result.append(body(column5, 4))
+    result.append(body(column6, 5))
+    result.append(body(column7, 6))
+    result.append(body(column8, 7))
+    result.append(body(column9, 8))
+    result.append(body(column10, 9))
+    
+    return result
   }
 }
 

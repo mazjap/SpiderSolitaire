@@ -3,8 +3,15 @@ import Foundation
 struct Card: Hashable, Identifiable {
   let value: Value
   let suit: Suit
-  let id: UUID = UUID()
-  var isVisible: Bool = false
+  let id: UUID
+  var isVisible: Bool
+  
+  init(value: Value, suit: Suit, id: UUID = UUID(), isVisible: Bool = false) {
+    self.value = value
+    self.suit = suit
+    self.id = id
+    self.isVisible = isVisible
+  }
 }
 
 extension Card: CustomStringConvertible, CustomDebugStringConvertible {

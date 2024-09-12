@@ -10,6 +10,8 @@ struct CardStackView: View {
   private let cardHeight: Double
   private let namespace: Namespace.ID
   
+  private let cardShape = RoundedRectangle(cornerRadius: 4)
+  
   private let onDragEnd: (Int, CGPoint) -> Bool
   private let onDragStart: () -> Void
   
@@ -47,41 +49,46 @@ struct CardStackView: View {
   var body: some View {
     GeometryReader { geometry in
       ZStack {
-        ForEach(Array(cards.enumerated()), id: \.element.id) { (index, card) in
-          let verticalOffset = offsets[index]
-          let offset: CGSize = {
-            if let currentDragInfo, currentDragInfo.index <= index {
-              return CGSize(
-                width: currentDragInfo.offset.width,
-                height: currentDragInfo.offset.height + verticalOffset
-              )
-            } else {
-              return CGSize(width: 0, height: verticalOffset)
-            }
-          }()
-          let isUsable = index >= Int(validityIndex)
-          
-          CardView(for: card, width: cardWidth, height: cardHeight, isUsable: isUsable, namespace: namespace)
-            .offset(offset)
-            .gesture(DragGesture(coordinateSpace: .global)
-              .onChanged { value in
-                if currentDragInfo == nil {
-                  onDragStart()
-                }
-                
-                currentDragInfo = (index, value.translation)
+        if cards.isEmpty {
+          emptyColumn(width: cardWidth, height: cardHeight)
+            .transition(.scale)
+        } else {
+          ForEach(Array(cards.enumerated()), id: \.element.id) { (index, card) in
+            let verticalOffset = offsets[index]
+            let offset: CGSize = {
+              if let currentDragInfo, currentDragInfo.index <= index {
+                return CGSize(
+                  width: currentDragInfo.offset.width,
+                  height: currentDragInfo.offset.height + verticalOffset
+                )
+              } else {
+                return CGSize(width: 0, height: verticalOffset)
               }
-              .onEnded { value in
-                if onDragEnd(index, value.location) {
-                  withAnimation {
+            }()
+            let isUsable = index >= Int(validityIndex)
+            
+            CardView(for: card, width: cardWidth, height: cardHeight, isUsable: isUsable, namespace: namespace)
+              .offset(offset)
+              .gesture(DragGesture(coordinateSpace: .global)
+                .onChanged { value in
+                  if currentDragInfo == nil {
+                    onDragStart()
+                  }
+                  
+                  currentDragInfo = (index, value.translation)
+                }
+                .onEnded { value in
+                  if onDragEnd(index, value.location) {
+                    withAnimation {
+                      currentDragInfo = nil
+                    }
+                  } else {
                     currentDragInfo = nil
                   }
-                } else {
-                  currentDragInfo = nil
-                }
-              },
-              isEnabled: card.isVisible && isUsable
-            )
+                },
+                isEnabled: card.isVisible && isUsable
+              )
+          }
         }
       }
       .onChange(of: cards, initial: true) {
@@ -90,6 +97,16 @@ struct CardStackView: View {
     }
     .frame(width: cardWidth, height: cardHeight + (offsets.last ?? 0))
     .padding(.top, (offsets.last ?? 0))
+  }
+  
+  private func emptyColumn(width: Double, height: Double) -> some View {
+    cardShape
+      .foregroundStyle(.white.opacity(0.2))
+      .frame(width: width, height: height)
+      .overlay {
+        cardShape
+          .stroke(Color.white, lineWidth: 2)
+      }
   }
 }
 
