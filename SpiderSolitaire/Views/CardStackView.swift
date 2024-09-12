@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CardStackView: View {
-  @State private var currentDragInfo: (index: Int, offset: CGSize)?
+  @State private var currentDragInfo: (index: Int, pointRelativeToOrigin: CGPoint, offset: CGSize)?
   @Binding var frames: [Int : CGRect]
   
   private let cardStack: CardStack
@@ -12,12 +12,12 @@ struct CardStackView: View {
   
   private let cardShape = RoundedRectangle(cornerRadius: 4)
   
-  private let onDragEnd: (Int, CGPoint) -> Bool
+  private let onDragEnd: (Int, CGRect) -> Bool
   private let onDragStart: () -> Void
   
   private let offsets: [Double]
   
-  init(cardStack: CardStack, frames: Binding<[Int : CGRect]>, columnIndex: Int, cardWidth: Double, cardHeight: Double, namespace: Namespace.ID, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGPoint) -> Bool) {
+  init(cardStack: CardStack, frames: Binding<[Int : CGRect]>, columnIndex: Int, cardWidth: Double, cardHeight: Double, namespace: Namespace.ID, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGRect) -> Bool) {
     self.cardStack = cardStack
     self._frames = frames
     self.columnIndex = columnIndex
@@ -71,14 +71,40 @@ struct CardStackView: View {
               .offset(offset)
               .gesture(DragGesture(coordinateSpace: .global)
                 .onChanged { value in
-                  if currentDragInfo == nil {
+                  if let relativePoint = currentDragInfo?.pointRelativeToOrigin {
+                    currentDragInfo = (index, relativePoint, value.translation)
+                  } else {
                     onDragStart()
+                    
+                    let absFrame = frames[columnIndex] ?? .zero
+                    let frame = CGRect(
+                      x: absFrame.minX,
+                      y: absFrame.minY + verticalOffset,
+                      width: absFrame.width,
+                      height: absFrame.height - verticalOffset
+                    )
+                    
+                    let pointRelativeToOrigin = CGPoint(
+                      x: value.location.x - frame.minX,
+                      y: value.location.y - frame.minY
+                    )
+                    
+                    currentDragInfo = (index, pointRelativeToOrigin, value.translation)
                   }
-                  
-                  currentDragInfo = (index, value.translation)
                 }
                 .onEnded { value in
-                  if onDragEnd(index, value.location) {
+                  guard let relativePoint = currentDragInfo?.pointRelativeToOrigin
+                  else { return }
+                  
+                  let absFrame = frames[columnIndex] ?? .zero
+                  let frame = CGRect(
+                    x: value.location.x - relativePoint.x,
+                    y: value.location.y - relativePoint.y,
+                    width: absFrame.width,
+                    height: absFrame.height - verticalOffset
+                  )
+                  
+                  if onDragEnd(index, frame) {
                     withAnimation {
                       currentDragInfo = nil
                     }
