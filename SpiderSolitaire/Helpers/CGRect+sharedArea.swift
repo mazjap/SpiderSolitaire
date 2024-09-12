@@ -1,7 +1,7 @@
 import Foundation
 
 extension CGRect {
-  func sharedArea(with rect: CGRect) -> Double {
+  func sharedArea(with rect: CGRect) -> CGFloat {
     let area = width * height
     let otherArea = rect.width * rect.height
     
