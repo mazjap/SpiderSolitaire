@@ -20,7 +20,7 @@
 
 ## Requirements
 
-- iOS 18.0+/macOS 15+
+- iOS 18.0+/macOS 14.0+
 - Xcode 16.0+
 - Swift 6
 
@@ -51,11 +51,11 @@ open SpiderSolitaire.xcodeproj
 
 This project follows the MVVM (Model-View-ViewModel) architecture and utilizes SwiftUI's latest features:
 
-GameView: Main view containing the game board
-CardView: Custom view for rendering individual cards
-CardStackView: Manages stacks of cards in columns
-GameViewModel: Handles game logic and state management
-GameState: Represents the current state of the game
+- GameView: Main view containing the game board
+- CardView: Custom view for rendering individual cards
+- CardStackView: Manages stacks of cards in columns
+- GameViewModel: Handles game logic and state management
+- GameState: Represents the current state of the game
 
 ## Contributing
 
