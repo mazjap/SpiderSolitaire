@@ -3,6 +3,7 @@ import Foundation
 enum Move: Equatable {
   case draw(id: UUID)
   case move(columnIndex: UInt8, cardCount: UInt8, destinationIndex: UInt8, didRevealCard: Bool)
+  case completedSet(columnIndex: UInt8, didRevealCard: Bool)
 }
 
 struct GameState: Equatable {
@@ -59,6 +60,7 @@ struct GameState: Equatable {
   
   init(completedSets: [CompletedSet] = [], column1: CardStack, column2: CardStack, column3: CardStack, column4: CardStack, column5: CardStack, column6: CardStack, column7: CardStack, column8: CardStack, column9: CardStack, column10: CardStack, draws: [Draw], previousMoves: [Move] = []) {
     self.completedSets = completedSets
+    self.completedSets.reserveCapacity(8)
     self.draws = draws
     self.previousMoves = previousMoves
     self.previousMoves.reserveCapacity(100)

@@ -61,6 +61,10 @@ extension GameViewModel {
     validateIndex(forColumn: destination)
     
     state.previousMoves.append(.move(columnIndex: UInt8(source), cardCount: UInt8(cardsToMoveCount), destinationIndex: UInt8(destination), didRevealCard: didRevealCard))
+    
+    checkForCompletedSet(forColumn: source)
+    checkForCompletedSet(forColumn: destination)
+    
     incrementMoves()
     return false
   }
@@ -144,11 +148,51 @@ extension GameViewModel {
       
       validateIndex(forColumn: Int(newSource))
       validateIndex(forColumn: Int(newDestination))
-    case .none:
-      break
+    case let .completedSet(columnIndex, shouldHideCard): // Should not increment move count, just pop another move
+      guard let completedSet = state.completedSets.popLast() else { return }
+      if shouldHideCard, !state[columnIndex].isEmpty {
+        state[columnIndex].cards[state[columnIndex].cards.count - 1].isVisible = false
+      }
+      
+      state[columnIndex].cards.append(contentsOf: Card.Value.allCases.reversed().map { Card(value: $0, suit: completedSet.suit, isVisible: true) })
+      
+      popPreviousMoveAndApply()
+      return
+    case .none: return
     }
     
     incrementMoves()
+  }
+  
+  private func checkForCompletedSet(forColumn columnIndex: Int) {
+    guard self[columnIndex].count >= 13,
+          let last = self[columnIndex].cards.last
+    else { return }
+    
+    let suit = last.suit
+    var lastValue = last.value
+    
+    for card in self[columnIndex].cards.dropLast().reversed() where card.isVisible {
+      guard card.isVisible, card.value == lastValue.larger else { break }
+      lastValue = card.value
+    }
+    
+    guard lastValue == .king else { return }
+    
+    self[columnIndex].cards.removeLast(13)
+    state.completedSets.append(CompletedSet(suit: suit))
+    
+    var didRevealCard = false
+    
+    
+    if !state[columnIndex].isEmpty {
+      didRevealCard = !state[columnIndex].cards[state[columnIndex].cards.count - 1].isVisible
+      state[columnIndex].cards[state[columnIndex].cards.count - 1].isVisible = true
+    }
+    
+    print(state.previousMoves)
+    state.previousMoves.append(.completedSet(columnIndex: UInt8(columnIndex), didRevealCard: didRevealCard))
+    print(state.previousMoves)
   }
   
   private func validateIndex(forColumn columnIndex: Int) {

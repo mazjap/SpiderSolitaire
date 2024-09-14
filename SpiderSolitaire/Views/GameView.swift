@@ -6,6 +6,8 @@ struct GameView: View {
   @State private var cardStackFrames = [Int : CGRect]()
   @State private var areNewGameOptionsShown = false
   @Namespace private var namespace
+  @ScaledMetric private var controlImageSize = Double(30)
+  
   private let backgroundColor = Color.green.mix(with: .black, by: 0.2)
   
   private let outerHorizontalPadding: Double = 4
@@ -141,7 +143,7 @@ extension GameView {
           Image(systemName: "gear")
             .resizable()
             .scaledToFit()
-            .frame(width: 30, height: 30)
+            .frame(width: controlImageSize, height: controlImageSize)
           
           Text("Settings")
         }
@@ -157,7 +159,7 @@ extension GameView {
           Image(systemName: "lightbulb.max.fill")
             .resizable()
             .scaledToFit()
-            .frame(width: 30, height: 30)
+            .frame(width: controlImageSize, height: controlImageSize)
             .foregroundStyle(.yellow)
           
           Text("Hint")
@@ -186,6 +188,8 @@ GameState(
       ".draw(id: UUID(uuidString: \"\(id.uuidString)\")!)"
     case let .move(columnIndex, cardCount, destinationIndex, didRevealCard):
       ".move(columnIndex: \(columnIndex), cardCount: \(cardCount), destinationIndex: \(destinationIndex), didRevealCard: \(didRevealCard))"
+    case let .completedSet(columnIndex, didRevealCard):
+      ".completedSet(columnIndex: \(columnIndex), didRevealCard: \(didRevealCard))"
     }
   }.joined(separator: ", \n"))]
 )
@@ -195,7 +199,7 @@ GameState(
           Image(systemName: "ladybug.fill")
             .resizable()
             .scaledToFit()
-            .frame(width: 30, height: 30)
+            .frame(width: controlImageSize, height: controlImageSize)
           
           Text("Debug")
         }
@@ -208,20 +212,22 @@ GameState(
         areNewGameOptionsShown.toggle()
       } label: {
         VStack {
+          let width = controlImageSize * 0.75
+          let height = controlImageSize
           ZStack {
-            CardView(for: .hidden, width: 20, height: 30, isUsable: true, namespace: namespace)
+            CardView(for: .hidden, width: width, height: height, isUsable: true, namespace: namespace)
               .rotationEffect(.degrees(20))
-              .offset(x: 10)
+              .offset(x: width / 3)
             
-            CardView(for: .hidden, width: 20, height: 30, isUsable: true, namespace: namespace)
+            CardView(for: .hidden, width: width, height: height, isUsable: true, namespace: namespace)
               .rotationEffect(.degrees(-20))
-              .offset(x: -10)
+              .offset(x: -width / 3)
             
-            CardView(for: .hidden, width: 20, height: 30, isUsable: true, namespace: namespace)
-              .offset(y: -2)
+            CardView(for: .hidden, width: width, height: height, isUsable: true, namespace: namespace)
+              .offset(y: -width / 10)
           }
-          .frame(width: 30, height: 30)
-          .offset(y: 2)
+          .frame(width: height, height: height)
+          .offset(y: width / 10)
           
           Text("Play")
         }
@@ -230,19 +236,23 @@ GameState(
       Spacer()
       
       Button {
-        model.popPreviousMoveAndApply()
+        withAnimation {
+          model.popPreviousMoveAndApply()
+        }
       } label: {
         VStack {
           Image(systemName: "arrow.uturn.backward")
             .resizable()
             .scaledToFit()
-            .frame(width: 30, height: 30)
+            .frame(width: controlImageSize, height: controlImageSize)
           
           Text("Undo")
         }
         .foregroundStyle(model.canUndo ? .white : .gray)
       }
     }
+    .lineLimit(1)
+    .minimumScaleFactor(0.1)
     .foregroundStyle(.white)
     .padding(.top, 8)
     .padding(.bottom, 4)
@@ -300,6 +310,11 @@ extension GameView {
 //    CompletedSet(suit: .spade),
 //    CompletedSet(suit: .spade)
 //  ]
+  
+  gameState.column1 = CardStack(cards: Array(Card.Value.allCases).reversed().dropLast().map {
+    Card(value: $0, suit: .club, isVisible: true)
+  }, validityIndex: 0)
+  gameState.column2 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
   
   gameState.seconds = Int(60.0 * 59.99)
   
