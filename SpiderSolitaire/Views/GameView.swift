@@ -51,36 +51,7 @@ struct GameView: View {
             .frame(height: 10)
           
           HStack(spacing: interCardSpacing) {
-            ForEach(0..<10) { columnNum in
-              let cardStack = model[columnNum]
-              
-              CardStackView(cardStack: cardStack, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: cardWidth, cardHeight: cardHeight, namespace: namespace) {
-                draggingColumn = columnNum
-              } onDragEnd: { draggingCardIndex, frame in
-                let shouldAnimateReturn: Bool
-                
-                let bestSharedArea = cardStackFrames
-                  .filter({ $0.key != columnNum })
-                  .mapValues({
-                    $0.sharedArea(with: frame)
-                  })
-                  .max(by: {
-                    $0.value < $1.value
-                  })
-                
-                if let bestSharedArea, bestSharedArea.value > 0.1, bestSharedArea.value <= 1 {
-                  shouldAnimateReturn = withAnimation {
-                    model.moveCards(fromColumn: columnNum, cardIndex: draggingCardIndex, toColumn: bestSharedArea.key)
-                  }
-                } else {
-                  shouldAnimateReturn = true
-                }
-                
-                return shouldAnimateReturn
-              }
-              .zIndex(draggingColumn == columnNum ? 1 : 0)
-            }
-            .transition(.offset(.zero))
+            cards(width: cardWidth, height: cardHeight)
           }
           .frame(height: cardHeight)
           
@@ -289,6 +260,39 @@ extension GameView {
       }
     }
     .frame(height: height)
+  }
+  
+  private func cards(width: Double, height: Double) -> some View {
+    ForEach(0..<10) { columnNum in
+      let cardStack = model[columnNum]
+      
+      CardStackView(cardStack: cardStack, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: width, cardHeight: height, namespace: namespace) {
+        draggingColumn = columnNum
+      } onDragEnd: { draggingCardIndex, frame in
+        let shouldAnimateReturn: Bool
+        
+        let bestSharedArea = cardStackFrames
+          .filter({ $0.key != columnNum })
+          .mapValues({
+            $0.sharedArea(with: frame)
+          })
+          .max(by: {
+            $0.value < $1.value
+          })
+        
+        if let bestSharedArea, bestSharedArea.value > 0.1, bestSharedArea.value <= 1 {
+          shouldAnimateReturn = withAnimation {
+            model.moveCards(fromColumn: columnNum, cardIndex: draggingCardIndex, toColumn: bestSharedArea.key)
+          }
+        } else {
+          shouldAnimateReturn = true
+        }
+        
+        return shouldAnimateReturn
+      }
+      .zIndex(draggingColumn == columnNum ? 1 : 0)
+    }
+    .transition(.offset(.zero))
   }
 }
 

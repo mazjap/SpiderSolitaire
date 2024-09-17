@@ -120,6 +120,9 @@ struct CardStackView: View {
       .onChange(of: cards, initial: true) {
         frames[columnIndex] = geometry.frame(in: .global)
       }
+      .onChange(of: [cardWidth, cardHeight]) {
+        frames[columnIndex] = geometry.frame(in: .global)
+      }
     }
     .frame(width: cardWidth, height: cardHeight + (offsets.last ?? 0))
     .padding(.top, (offsets.last ?? 0))
