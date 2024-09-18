@@ -41,6 +41,12 @@ extension GameViewModel {
     }
   }
   
+  func validateAllColumns() {
+    for columnIndex in 0..<10 {
+      validateIndex(forColumn: columnIndex)
+    }
+  }
+  
   func moveCards(fromColumn source: Int, cardIndex: Int, toColumn destination: Int) -> Bool {
     let cardsToMove = state[source].cards[cardIndex...]
     let cardsToMoveCount = cardsToMove.count
@@ -110,9 +116,7 @@ extension GameViewModel {
       column.cards.append(draw[index])
     }
     
-    for columnIndex in 0..<10 {
-      validateIndex(forColumn: columnIndex)
-    }
+    validateAllColumns()
     
     state.previousMoves.append(.draw(id: draw.id))
     incrementMoves()

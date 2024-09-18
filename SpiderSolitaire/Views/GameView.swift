@@ -300,6 +300,7 @@ extension GameView {
 extension GameView {
   private func onGameStart() {
     model.revealTopCardsInAllColumns()
+    model.validateAllColumns()
   }
 }
 
