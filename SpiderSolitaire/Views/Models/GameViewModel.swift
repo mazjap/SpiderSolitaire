@@ -166,7 +166,8 @@ extension GameViewModel {
   
   private func checkForCompletedSet(forColumn columnIndex: Int) {
     guard self[columnIndex].count >= 13,
-          let last = self[columnIndex].cards.last
+          let last = self[columnIndex].cards.last,
+          last.value == .ace
     else { return }
     
     let suit = last.suit
@@ -190,9 +191,9 @@ extension GameViewModel {
       state[columnIndex].cards[state[columnIndex].cards.count - 1].isVisible = true
     }
     
-    print(state.previousMoves)
     state.previousMoves.append(.completedSet(columnIndex: UInt8(columnIndex), didRevealCard: didRevealCard))
-    print(state.previousMoves)
+    
+    validateIndex(forColumn: columnIndex)
   }
   
   private func validateIndex(forColumn columnIndex: Int) {
