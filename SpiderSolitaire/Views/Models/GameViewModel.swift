@@ -165,6 +165,7 @@ extension GameViewModel {
   }
   
   private func checkForCompletedSet(forColumn columnIndex: Int) {
+    // FIXME: - Check that suit is the same
     guard self[columnIndex].count >= 13,
           let last = self[columnIndex].cards.last,
           last.value == .ace
@@ -197,19 +198,21 @@ extension GameViewModel {
   }
   
   private func validateIndex(forColumn columnIndex: Int) {
-    if self[columnIndex].count > 1 {
-      // FIXME: - Check that suit is the same, or that it alternates between red and black
-      for cardIndex in self[columnIndex].cards.indices.dropLast().reversed() {
-        guard self[columnIndex][cardIndex].value == self[columnIndex][cardIndex + 1].value.larger else {
-          self[columnIndex].validityIndex = cardIndex + 1
-          return
-        }
-      }
-      
-      self[columnIndex].validityIndex = 0
-    } else {
-      self[columnIndex].validityIndex = self[columnIndex].count - 1
+    guard let lastCard = self[columnIndex].cards.last else {
+      self[columnIndex].validityIndex = -1
+      return
     }
+    
+    for cardIndex in self[columnIndex].cards.indices.dropLast().reversed() {
+      guard self[columnIndex][cardIndex].value == self[columnIndex][cardIndex + 1].value.larger,
+            self[columnIndex][cardIndex].suit == lastCard.suit
+      else {
+        self[columnIndex].validityIndex = cardIndex + 1
+        return
+      }
+    }
+    
+    self[columnIndex].validityIndex = 0
   }
   
   private func updateFormatter() {
