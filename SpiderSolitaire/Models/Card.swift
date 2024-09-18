@@ -66,3 +66,35 @@ extension Card {
     case club
   }
 }
+
+// Useful for debugging/testing
+extension Card.Value {
+  static var random: Card.Value {
+    switch Int.random(in: 0..<13) {
+    case 0: .ace
+    case 1: .two
+    case 2: .three
+    case 3: .four
+    case 4: .five
+    case 5: .six
+    case 6: .seven
+    case 7: .eight
+    case 8: .nine
+    case 9: .ten
+    case 10: .jack
+    case 11: .queen
+    default: .king
+    }
+  }
+}
+
+extension Card.Suit {
+  static var random: Card.Suit {
+    switch Int.random(in: 0..<3) {
+    case 0: .heart
+    case 1: .diamond
+    case 2: .spade
+    default: .club
+    }
+  }
+}

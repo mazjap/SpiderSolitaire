@@ -316,10 +316,15 @@ extension GameView {
 //    CompletedSet(suit: .spade)
 //  ]
   
-  gameState.column1 = CardStack(cards: [Card.Value.four, Card.Value.three, Card.Value.two, Card.Value.ace].map { Card(value: $0, suit: .club, isVisible: true) } + Array(Card.Value.allCases).reversed().dropLast().map {
+  gameState.column1 = CardStack(cards: [Card.Value.four, Card.Value.three, Card.Value.two, Card.Value.ace].map { Card(value: $0, suit: .diamond, isVisible: true) } + Array(Card.Value.allCases).reversed().dropLast().map {
     Card(value: $0, suit: .club, isVisible: true)
   }, validityIndex: 0)
   gameState.column2 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
+  
+  gameState.column3 = CardStack(cards: Array(Card.Value.allCases).reversed().dropLast().map {
+    Card(value: $0, suit: .random, isVisible: true)
+  }, validityIndex: 0)
+  gameState.column4 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
   
   gameState.seconds = Int(60.0 * 59.99)
   

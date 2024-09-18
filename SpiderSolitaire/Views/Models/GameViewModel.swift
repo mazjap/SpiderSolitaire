@@ -165,7 +165,6 @@ extension GameViewModel {
   }
   
   private func checkForCompletedSet(forColumn columnIndex: Int) {
-    // FIXME: - Check that suit is the same
     guard self[columnIndex].count >= 13,
           let last = self[columnIndex].cards.last,
           last.value == .ace
@@ -175,7 +174,11 @@ extension GameViewModel {
     var lastValue = last.value
     
     for card in self[columnIndex].cards.dropLast().reversed() where card.isVisible {
-      guard card.isVisible, card.value == lastValue.larger else { break }
+      guard card.isVisible,
+            card.value == lastValue.larger,
+            card.suit == last.suit
+      else { break }
+      
       lastValue = card.value
     }
     
