@@ -4,11 +4,17 @@ struct CardView: View {
   @State private var flipRotation: Double
   @State private var isVisuallyFlipped: Bool
   
+  @Environment(\.namespace) private var animationNamespace
+  @Namespace private var fallbacknspace
+  
+  private var namespace: Namespace.ID {
+    animationNamespace ?? fallbacknspace
+  }
+  
   private let cardData: CardData
   private let width: Double
   private let height: Double
   private let isUsable: Bool
-  private let namespace: Namespace.ID
   
   private let cardShape: RoundedRectangle
   private let textFontSize: Double
@@ -16,7 +22,7 @@ struct CardView: View {
   private let horizontalBottomPadding: Double
   private let strokeWidth: Double
   
-  init(for cardData: CardData, width: Double, height: Double, isUsable: Bool, namespace: Namespace.ID) {
+  init(for cardData: CardData, width: Double, height: Double, isUsable: Bool) {
     self.isVisuallyFlipped = cardData.card.isVisible
     self.flipRotation = cardData.card.isVisible ? 180 : 0
     
@@ -24,7 +30,6 @@ struct CardView: View {
     self.width = width
     self.height = height
     self.isUsable = isUsable
-    self.namespace = namespace
     
     let minDimension = min(width, height)
     
@@ -35,8 +40,8 @@ struct CardView: View {
     self.strokeWidth = max(1, minDimension / 30)
   }
   
-  init(for card: Card, width: Double, height: Double, isUsable: Bool, namespace: Namespace.ID) {
-    self.init(for: .card(card), width: width, height: height, isUsable: isUsable, namespace: namespace)
+  init(for card: Card, width: Double, height: Double, isUsable: Bool) {
+    self.init(for: .card(card), width: width, height: height, isUsable: isUsable)
   }
   
   var body: some View {
@@ -146,7 +151,6 @@ struct CardView: View {
 }
 
 #Preview {
-  @Previewable @Namespace var namespace
   @Previewable @State var flippableCard = Card(value: .ten, suit: .spade, isVisible: false)
   @Previewable @State var isUsable = true
   
@@ -157,17 +161,17 @@ struct CardView: View {
     HStack(spacing: 6) {
       ForEach(Card.Suit.allCases, id: \.rawValue) { suit in
         VStack(spacing: 6) {
-          CardView(for: Card(value: .ace, suit: suit), width: width, height: height, isUsable: true, namespace: namespace)
-          CardView(for: Card(value: .king, suit: suit, isVisible: true), width: width, height: height, isUsable: true, namespace: namespace)
-          CardView(for: Card(value: .queen, suit: suit, isVisible: true), width: width, height: height, isUsable: true, namespace: namespace)
-          CardView(for: Card(value: .jack, suit: suit, isVisible: true), width: width, height: height, isUsable: true, namespace: namespace)
-          CardView(for: Card(value: .ace, suit: suit, isVisible: true), width: width, height: height, isUsable: true, namespace: namespace)
+          CardView(for: Card(value: .ace, suit: suit), width: width, height: height, isUsable: true)
+          CardView(for: Card(value: .king, suit: suit, isVisible: true), width: width, height: height, isUsable: true)
+          CardView(for: Card(value: .queen, suit: suit, isVisible: true), width: width, height: height, isUsable: true)
+          CardView(for: Card(value: .jack, suit: suit, isVisible: true), width: width, height: height, isUsable: true)
+          CardView(for: Card(value: .ace, suit: suit, isVisible: true), width: width, height: height, isUsable: true)
         }
       }
     }
     
     HStack {
-      CardView(for: flippableCard, width: width, height: height, isUsable: isUsable, namespace: namespace)
+      CardView(for: flippableCard, width: width, height: height, isUsable: isUsable)
       
       VStack {
         Button("Flip card") {

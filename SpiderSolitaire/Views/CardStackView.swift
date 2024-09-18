@@ -4,11 +4,12 @@ struct CardStackView: View {
   @State private var currentDragInfo: (index: Int, pointRelativeToOrigin: CGPoint, offset: CGSize)?
   @Binding var frames: [Int : CGRect]
   
+  @Environment(\.namespace) var namespace
+  
   private let cardStack: CardStack
   private let columnIndex: Int
   private let cardWidth: Double
   private let cardHeight: Double
-  private let namespace: Namespace.ID
   
   private let cardShape = RoundedRectangle(cornerRadius: 4)
   
@@ -17,13 +18,12 @@ struct CardStackView: View {
   
   private let offsets: [Double]
   
-  init(cardStack: CardStack, frames: Binding<[Int : CGRect]>, columnIndex: Int, cardWidth: Double, cardHeight: Double, namespace: Namespace.ID, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGRect) -> Bool) {
+  init(cardStack: CardStack, frames: Binding<[Int : CGRect]>, columnIndex: Int, cardWidth: Double, cardHeight: Double, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGRect) -> Bool) {
     self.cardStack = cardStack
     self._frames = frames
     self.columnIndex = columnIndex
     self.cardWidth = cardWidth
     self.cardHeight = cardHeight
-    self.namespace = namespace
     
     self.onDragStart = onDragStart
     self.onDragEnd = onDragEnd
@@ -67,7 +67,7 @@ struct CardStackView: View {
             }()
             let isUsable = index >= Int(validityIndex)
             
-            CardView(for: card, width: cardWidth, height: cardHeight, isUsable: isUsable, namespace: namespace)
+            CardView(for: card, width: cardWidth, height: cardHeight, isUsable: isUsable)
               .offset(offset)
               .gesture(DragGesture(coordinateSpace: .global)
                 .onChanged { value in
@@ -151,10 +151,9 @@ extension CardStackView {
 
 #Preview {
   @Previewable @State var cards = Card.Value.allCases.map { Card(value: $0, suit: .heart) }
-  @Previewable @Namespace var namespace
   
   VStack {
-    CardStackView(cardStack: .init(cards: cards, validityIndex: .max), frames: .constant([:]), columnIndex: 0, cardWidth: 30, cardHeight: 45, namespace: namespace) {
+    CardStackView(cardStack: .init(cards: cards, validityIndex: .max), frames: .constant([:]), columnIndex: 0, cardWidth: 30, cardHeight: 45) {
       print("Card(s) dragged")
     } onDragEnd: { card, offset in
       return true

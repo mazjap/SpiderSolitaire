@@ -62,6 +62,7 @@ struct GameView: View {
         .padding(.horizontal, outerHorizontalPadding)
       }
     }
+    .namespace(namespace)
     .onAppear {
       onGameStart()
     }
@@ -186,15 +187,15 @@ GameState(
           let width = controlImageSize * 0.75
           let height = controlImageSize
           ZStack {
-            CardView(for: .hidden, width: width, height: height, isUsable: true, namespace: namespace)
+            CardView(for: .hidden, width: width, height: height, isUsable: true)
               .rotationEffect(.degrees(20))
               .offset(x: width / 3)
             
-            CardView(for: .hidden, width: width, height: height, isUsable: true, namespace: namespace)
+            CardView(for: .hidden, width: width, height: height, isUsable: true)
               .rotationEffect(.degrees(-20))
               .offset(x: -width / 3)
             
-            CardView(for: .hidden, width: width, height: height, isUsable: true, namespace: namespace)
+            CardView(for: .hidden, width: width, height: height, isUsable: true)
               .offset(y: -width / 10)
           }
           .frame(width: height, height: height)
@@ -243,7 +244,7 @@ extension GameView {
     
     return ZStack {
       ForEach(Array(model.state.completedSets.enumerated()), id: \.element.id) { (index, set) in
-        CardView(for: .completedSet(set), width: width, height: height, isUsable: true, namespace: namespace)
+        CardView(for: .completedSet(set), width: width, height: height, isUsable: true)
           .offset(x: subsequentCardOffset * Double(index))
       }
     }
@@ -255,7 +256,7 @@ extension GameView {
     
     return ZStack {
       ForEach(Array(model.state.draws.enumerated()), id: \.element.id) { (index, set) in
-        CardView(for: .hidden, width: width, height: height, isUsable: true, namespace: namespace)
+        CardView(for: .hidden, width: width, height: height, isUsable: true)
           .offset(x: -subsequentCardOffset * Double(index))
       }
     }
@@ -266,7 +267,7 @@ extension GameView {
     ForEach(0..<10) { columnNum in
       let cardStack = model[columnNum]
       
-      CardStackView(cardStack: cardStack, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: width, cardHeight: height, namespace: namespace) {
+      CardStackView(cardStack: cardStack, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: width, cardHeight: height) {
         draggingColumn = columnNum
       } onDragEnd: { draggingCardIndex, frame in
         let shouldAnimateReturn: Bool
@@ -315,7 +316,7 @@ extension GameView {
 //    CompletedSet(suit: .spade)
 //  ]
   
-  gameState.column1 = CardStack(cards: Array(Card.Value.allCases).reversed().dropLast().map {
+  gameState.column1 = CardStack(cards: [Card.Value.four, Card.Value.three, Card.Value.two, Card.Value.ace].map { Card(value: $0, suit: .club, isVisible: true) } + Array(Card.Value.allCases).reversed().dropLast().map {
     Card(value: $0, suit: .club, isVisible: true)
   }, validityIndex: 0)
   gameState.column2 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
