@@ -11,6 +11,7 @@ class GameViewModel {
   @ObservationIgnored
   nonisolated(unsafe) private var timerCancellable: AnyCancellable?
   private let timerLock = NSLock()
+  private var hintsForHashValue: (hash: Int, [Move])?
   
   private let formatter: DateComponentsFormatter = {
     let formatter = DateComponentsFormatter()
