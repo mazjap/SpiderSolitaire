@@ -132,49 +132,25 @@ struct GameState: Equatable {
 extension GameState {
   /// Mutates each column using the given closure
   /// - Parameter mutate: A closure used on each column with only a paramter, cardStack which acts agnostically on each column.
-  mutating func mutateColumns(_ mutate: (inout CardStack) -> Void) {
-    mutateColumns { cards, _ in
-      mutate(&cards)
+  mutating func mutateColumns(_ mutate: (inout CardStack) throws -> Void) rethrows {
+    try mutateColumns { cards, _ in
+      try mutate(&cards)
     }
   }
   
   /// Mutates each column using the given closure
   /// - Parameter mutate: A closure used on each column with the following parameters: cardStack - A `CardStack` struct which can be mutated. - index the index of the column being mutated
-  mutating func mutateColumns(_ mutate: (inout CardStack, Int) -> Void) {
-    mutate(&column1, 0)
-    mutate(&column2, 1)
-    mutate(&column3, 2)
-    mutate(&column4, 3)
-    mutate(&column5, 4)
-    mutate(&column6, 5)
-    mutate(&column7, 6)
-    mutate(&column8, 7)
-    mutate(&column9, 8)
-    mutate(&column10, 9)
-  }
-  
-  func mapColumns<T>(_ body: (CardStack) -> T) -> [T] {
-    mapColumns { cards, _ in
-      body(cards)
-    }
-  }
-  
-  func mapColumns<T>(_ body: (CardStack, Int) -> T) -> [T] {
-    var result = [T]()
-    result.reserveCapacity(10)
-    
-    result.append(body(column1, 0))
-    result.append(body(column2, 1))
-    result.append(body(column3, 2))
-    result.append(body(column4, 3))
-    result.append(body(column5, 4))
-    result.append(body(column6, 5))
-    result.append(body(column7, 6))
-    result.append(body(column8, 7))
-    result.append(body(column9, 8))
-    result.append(body(column10, 9))
-    
-    return result
+  mutating func mutateColumns(_ mutate: (inout CardStack, Int) throws -> Void) rethrows {
+    try mutate(&column1, 0)
+    try mutate(&column2, 1)
+    try mutate(&column3, 2)
+    try mutate(&column4, 3)
+    try mutate(&column5, 4)
+    try mutate(&column6, 5)
+    try mutate(&column7, 6)
+    try mutate(&column8, 7)
+    try mutate(&column9, 8)
+    try mutate(&column10, 9)
   }
 }
 
