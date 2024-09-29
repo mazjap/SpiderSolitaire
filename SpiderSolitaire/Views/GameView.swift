@@ -209,10 +209,13 @@ extension GameView {
       Spacer()
       
       Button {
-        withAnimation {
+        withAnimation(.linear(duration: 0.5)) {
           model.popPreviousMoveAndApply { completion in
-            withAnimation {
-              completion()
+            Task {
+              try? await Task.sleep(for: .seconds(0.5))
+              withAnimation {
+                completion()
+              }
             }
           }
         }
@@ -329,21 +332,19 @@ extension GameView {
       Task {
         var indices: [Int]?
         
-        withAnimation {
+        withAnimation(.linear(duration: 0.3)) {
           indices = model.apply(draw: draw)
-        } completion: {
-          Task {
-            model.makeCardsVisible(at: indices ?? [])
-            // Sleep for duration of `CardView` flip animation (0.3s)
-            try? await Task.sleep(for: .seconds(0.3))
-            
-            withAnimation {
-              for i in 0..<10 {
-                model.checkForCompletedSet(forColumn: i)
-              }
-            }
+        }
+        
+        try await Task.sleep(for: .seconds(0.2))
+        model.makeCardsVisible(at: indices ?? [])
+        // Sleep for duration of `CardView` flip animation (0.3s)
+        try? await Task.sleep(for: .seconds(0.3))
+        
+        withAnimation {
+          for i in 0..<10 {
+            model.checkForCompletedSet(forColumn: i)
           }
-          
         }
       }
     } catch {

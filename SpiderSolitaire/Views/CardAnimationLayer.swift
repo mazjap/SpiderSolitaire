@@ -6,12 +6,12 @@ struct CardAnimationLayer: View {
   private let drawStackFrame: CGRect
   private let completedSetsFrame: CGRect
   
-  private var drawAction: AnimationLayerDrawAction? {
-    state.drawAction
+  private var inProgressDraw: [Card]? {
+    state.inProgressDraw
   }
   
-  private var completedSetAction: AnimationLayerCompleteSetAction? {
-    state.completedSetAction
+  private var inProgressSet: [Card]? {
+    state.inProgressSet
   }
   
   private var drawCount: Int {
@@ -41,42 +41,22 @@ struct CardAnimationLayer: View {
       let width = size.width
       let height = size.height
       
-      switch drawAction {
-      case let .do(cards): // To card stacks
-        ForEach(Array(cards.enumerated()), id: \.offset) { (columnNum, card) in
+      if let cards = inProgressDraw {
+        ForEach(cards) { card in
           let frame = drawStackFrame
           
           CardView(for: card, width: width, height: height, isUsable: true)
-            .position(x: frame.maxX - (width / 2) - (Double(drawCount) * 8), y: frame.midY) // FIXME: - Correct the y offset
+            .position(x: frame.maxX - (width / 2) - (Double(drawCount) * 8), y: frame.midY)
         }
-      case let .undo(cards): // To draw pile
-        let frame = drawStackFrame
-        
-        ForEach(cards) { card in
-          CardView(for: card, width: width, height: height, isUsable: true)
-            .position(x: frame.maxX - 20, y: frame.midY)
-        }
-      case .none:
-        EmptyView()
       }
       
-      switch completedSetAction {
-      case let .do(cards): // To Complete sets pile
+      if let cards = inProgressSet {
         let frame = completedSetsFrame
         
         ForEach(cards) { card in
           CardView(for: card, width: width, height: height, isUsable: true)
             .position(x: frame.minX + (width / 2) + (Double(completedSetCount) * 30), y: frame.midY)
         }
-      case let .undo(cards, index): // To single card stack
-        let frame = cardStackFrames[index]
-        
-        ForEach(cards) { card in
-          CardView(for: card, width: width, height: height, isUsable: true)
-            .position(x: frame.midX, y: frame.maxY)
-        }
-      case .none:
-        EmptyView()
       }
     }
   }

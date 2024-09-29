@@ -18,8 +18,8 @@ enum CardActionError: Error {
 }
 
 struct AnimationLayerState {
-  var drawAction: AnimationLayerDrawAction?
-  var completedSetAction: AnimationLayerCompleteSetAction?
+  var inProgressDraw: [Card]?
+  var inProgressSet: [Card]?
   var drawCount: Int
   var completedSetCount: Int
 }
@@ -35,8 +35,8 @@ class GameViewModel {
   nonisolated(unsafe) private var timerCancellable: AnyCancellable?
   private let timerLock = NSLock()
   private var hintsForHashValue: (hash: Int, [Move])?
-  private var animationLayerDraw: AnimationLayerDrawAction?
-  private var animationLayerCompletedSet: AnimationLayerCompleteSetAction?
+  private var inProgressDraw: [Card]?
+  private var inProgressSet: [Card]?
   
   var drawCount: Int {
     state.draws.count
@@ -47,7 +47,7 @@ class GameViewModel {
   }
   
   var animationLayerState: AnimationLayerState {
-    AnimationLayerState(drawAction: animationLayerDraw, completedSetAction: animationLayerCompletedSet, drawCount: drawCount, completedSetCount: completedSetCount)
+    AnimationLayerState(inProgressDraw: inProgressDraw, inProgressSet: inProgressSet, drawCount: drawCount, completedSetCount: completedSetCount)
   }
   
   private let formatter: DateComponentsFormatter = {
@@ -150,14 +150,14 @@ extension GameViewModel {
       throw CardActionError.noDrawsAvailable
     }
     
-    animationLayerDraw = .do(draw.cards)
+    inProgressDraw = draw.cards
     
     return draw
   }
   
   func apply(draw: Draw) -> [Int] {
     // Animation step 1, remove from view hierarchy
-    animationLayerDraw = nil
+    inProgressDraw = nil
     
     // Animation step 2, add somewhere else in the view hierarchy.
     // MatchedGeometryEffect will handle the rest
@@ -182,7 +182,7 @@ extension GameViewModel {
     }
   }
   
-  func popPreviousMoveAndApply(onCompletion: @escaping (() -> Void) -> Void) {
+  func popPreviousMoveAndApply(onCompletion: @escaping (@escaping () -> Void) -> Void) {
     switch state.previousMoves.popLast() {
     case .draw(let id):
       let defaultCard = Card(value: .ace, suit: .diamond)
@@ -192,16 +192,12 @@ extension GameViewModel {
         guard let card = stack.cards.popLast() else { return }
         draw[index] = card
       }
-      animationLayerDraw = .undo(draw.cards)
+      inProgressDraw = draw.cards
       
-      state.draws.append(draw)
-      
-      for i in 0..<10 {
-        validateIndex(forColumn: i)
-      }
-      
-      onCompletion {
-        animationLayerDraw = nil
+      onCompletion { [weak self] in
+        self?.inProgressDraw = nil
+        self?.state.draws.append(draw)
+        self?.validateAllColumns()
       }
     case let .move(newDestination, cardCount, newSource, shouldHideCard):
       let cardIndex = state[newSource].count - Int(cardCount)
@@ -225,13 +221,14 @@ extension GameViewModel {
       
       let cards = Card.Value.allCases.reversed().map { Card(value: $0, suit: completedSet.suit, isVisible: true) }
       
-      animationLayerCompletedSet = .undo(cards, index: Int(columnIndex))
+      inProgressSet = cards
       
-      onCompletion {
-        state[columnIndex].cards.append(contentsOf: cards)
-        animationLayerCompletedSet = nil
+      onCompletion { [weak self] in
+        self?.state[columnIndex].cards.append(contentsOf: cards)
+        self?.inProgressSet = nil
+        
+        self?.popPreviousMoveAndApply(onCompletion: onCompletion)
       }
-      popPreviousMoveAndApply(onCompletion: onCompletion)
       return
     case .none: return
     }
@@ -262,12 +259,12 @@ extension GameViewModel {
     let completedCards = self[columnIndex].cards.suffix(13)
     self[columnIndex].cards.removeLast(13)
     
-    animationLayerCompletedSet = .do(Array(completedCards))
+    inProgressSet = Array(completedCards)
     
     // Use a completion handler to finalize the set completion
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
       guard let self = self else { return }
-      self.animationLayerCompletedSet = nil
+      self.inProgressSet = nil
       self.state.completedSets.append(CompletedSet(suit: suit))
       
       var didRevealCard = false
