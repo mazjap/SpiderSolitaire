@@ -2,12 +2,11 @@ import SwiftUI
 
 struct CardStackView: View {
   @State private var currentDragInfo: (index: Int, pointRelativeToOrigin: CGPoint, offset: CGSize)?
-  @Binding var frames: [Int : CGRect]
+  @Binding var frame: CGRect
   
   @Environment(\.namespace) var namespace
   
   private let cardStack: CardStack
-  private let columnIndex: Int
   private let cardWidth: Double
   private let cardHeight: Double
   
@@ -18,10 +17,9 @@ struct CardStackView: View {
   
   private let offsets: [Double]
   
-  init(cardStack: CardStack, frames: Binding<[Int : CGRect]>, columnIndex: Int, cardWidth: Double, cardHeight: Double, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGRect) -> Bool) {
+  init(cardStack: CardStack, frame: Binding<CGRect>, cardWidth: Double, cardHeight: Double, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGRect) -> Bool) {
     self.cardStack = cardStack
-    self._frames = frames
-    self.columnIndex = columnIndex
+    self._frame = frame
     self.cardWidth = cardWidth
     self.cardHeight = cardHeight
     
@@ -76,7 +74,7 @@ struct CardStackView: View {
                   } else {
                     onDragStart()
                     
-                    let absFrame = frames[columnIndex] ?? .zero
+                    let absFrame = frame
                     let frame = CGRect(
                       x: absFrame.minX,
                       y: absFrame.minY + verticalOffset,
@@ -96,7 +94,7 @@ struct CardStackView: View {
                   guard let relativePoint = currentDragInfo?.pointRelativeToOrigin
                   else { return }
                   
-                  let absFrame = frames[columnIndex] ?? .zero
+                  let absFrame = frame
                   let frame = CGRect(
                     x: value.location.x - relativePoint.x,
                     y: value.location.y - relativePoint.y,
@@ -118,10 +116,10 @@ struct CardStackView: View {
         }
       }
       .onChange(of: cards, initial: true) {
-        frames[columnIndex] = geometry.frame(in: .global)
+        frame = geometry.frame(in: .global)
       }
       .onChange(of: [cardWidth, cardHeight]) {
-        frames[columnIndex] = geometry.frame(in: .global)
+        frame = geometry.frame(in: .global)
       }
     }
     .frame(width: cardWidth, height: cardHeight + (offsets.last ?? 0))
@@ -153,7 +151,7 @@ extension CardStackView {
   @Previewable @State var cards = Card.Value.allCases.map { Card(value: $0, suit: .heart) }
   
   VStack {
-    CardStackView(cardStack: .init(cards: cards, validityIndex: .max), frames: .constant([:]), columnIndex: 0, cardWidth: 30, cardHeight: 45) {
+    CardStackView(cardStack: .init(cards: cards, validityIndex: .max), frame: .constant(.zero), cardWidth: 30, cardHeight: 45) {
       print("Card(s) dragged")
     } onDragEnd: { card, offset in
       return true

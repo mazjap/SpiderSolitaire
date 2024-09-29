@@ -3,7 +3,9 @@ import SwiftUI
 struct GameView: View {
   @State private var model: GameViewModel
   @State private var draggingColumn: Int?
-  @State private var cardStackFrames = [Int : CGRect]()
+  @State private var cardStackFrames = [CGRect](repeating: .zero, count: 10)
+  @State private var drawStackFrame = CGRect.zero
+  @State private var completedSetsFrame = CGRect.zero
   @State private var areNewGameOptionsShown = false
   @Namespace private var namespace
   @ScaledMetric private var controlImageSize = Double(30)
@@ -242,41 +244,59 @@ extension GameView {
   private func completedSets(width: Double, height: Double) -> some View {
     let subsequentCardOffset: Double = 30
     
-    return ZStack {
-      ForEach(Array(model.state.completedSets.enumerated()), id: \.element.id) { (index, set) in
-        CardView(for: .completedSet(set), width: width, height: height, isUsable: true)
-          .offset(x: subsequentCardOffset * Double(index))
+    return GeometryReader { geometry in
+      ZStack {
+        ForEach(Array(model.state.completedSets.enumerated()), id: \.element.id) { (index, set) in
+          CardView(for: .completedSet(set), width: width, height: height, isUsable: true)
+            .offset(x: subsequentCardOffset * Double(index))
+        }
+      }
+      .onChange(of: model.state.completedSets, initial: true) {
+        completedSetsFrame = geometry.frame(in: .global)
       }
     }
-    .frame(height: height)
+    .frame(
+      width: width + (subsequentCardOffset * Double(max(0, model.completedSetCount - 1))),
+      height: height)
   }
   
   private func drawStack(width: Double, height: Double) -> some View {
-    let subsequentCardOffset: Double = 4
+    let subsequentCardOffset: Double = 8
+    let maxWidth = width + (subsequentCardOffset * Double(max(0, model.drawCount - 1)))
     
-    return ZStack {
-      ForEach(Array(model.state.draws.enumerated()), id: \.element.id) { (index, set) in
-        CardView(for: .hidden, width: width, height: height, isUsable: true)
-          .offset(x: -subsequentCardOffset * Double(index))
+    return GeometryReader { geometry in
+      ZStack {
+        ForEach(Array(model.state.draws.enumerated()), id: \.element.id) { (index, set) in
+          CardView(for: .hidden, width: width, height: height, isUsable: true)
+            .offset(x: (maxWidth - width) / 2 - subsequentCardOffset * Double(index))
+        }
+      }
+      .frame(
+        width: maxWidth,
+        height: height
+      )
+      .onChange(of: model.state.draws, initial: true) {
+        drawStackFrame = geometry.frame(in: .global)
       }
     }
-    .frame(height: height)
+    .frame(
+      width: maxWidth,
+      height: height
+    )
   }
   
   private func cards(width: Double, height: Double) -> some View {
-    ForEach(0..<10) { columnNum in
+    ForEach(Array($cardStackFrames.enumerated()), id: \.offset) { (columnNum, frame) in
       let cardStack = model[columnNum]
       
-      CardStackView(cardStack: cardStack, frames: $cardStackFrames, columnIndex: columnNum, cardWidth: width, cardHeight: height) {
+      CardStackView(cardStack: cardStack, frame: frame, cardWidth: width, cardHeight: height) {
         draggingColumn = columnNum
       } onDragEnd: { draggingCardIndex, frame in
         let shouldAnimateReturn: Bool
         
-        let bestSharedArea = cardStackFrames
-          .filter({ $0.key != columnNum })
-          .mapValues({
-            $0.sharedArea(with: frame)
-          })
+        let bestSharedArea = cardStackFrames.enumerated()
+          .filter { $0.offset != columnNum }
+          .map { (key: $0.offset, value: $0.element.sharedArea(with: frame)) }
           .max(by: {
             $0.value < $1.value
           })
