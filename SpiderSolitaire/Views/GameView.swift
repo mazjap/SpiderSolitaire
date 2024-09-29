@@ -190,30 +190,7 @@ extension GameView {
       
       #if DEBUG
       Button {
-        // Ugly but useful
-        print("""
-GameState(
-  completedSets: \(model.state.completedSets.map { 
-    "CompletedSet(suit: .\($0.suit.rawValue), id: UUID(uuidString: \($0.id.uuidString))!)"
-  }), 
-  \(model.state.mapColumns { stack, index in
-          "column\(index + 1): CardStack(cards: [\n\(stack.cards.map { "Card(value: .\($0.value), suit: .\($0.suit), id: UUID(uuidString: \"\($0.id.uuidString)\")!, isVisible: \($0.isVisible))" }.joined(separator: ", \n"))], validityIndex: \(stack.validityIndex)), \n"
-  }.joined())
-  draws: [\(model.state.draws.map { draw in
-    "Draw(" + (0..<10).map { "column\($0 + 1): Card(value: .\(draw[$0].value), suit: .\(draw[$0].suit), id: UUID(uuidString: \"\(draw[$0].id.uuidString)\")!, isVisible: \(draw[$0].isVisible))" }.joined(separator: ", \n") + ")"
-  }.joined(separator: ", \n"))],
-  previousMoves: [\(model.state.previousMoves.map {
-    switch $0 {
-    case let .draw(id):
-      ".draw(id: UUID(uuidString: \"\(id.uuidString)\")!)"
-    case let .move(columnIndex, cardCount, destinationIndex, didRevealCard):
-      ".move(columnIndex: \(columnIndex), cardCount: \(cardCount), destinationIndex: \(destinationIndex), didRevealCard: \(didRevealCard))"
-    case let .completedSet(columnIndex, didRevealCard):
-      ".completedSet(columnIndex: \(columnIndex), didRevealCard: \(didRevealCard))"
-    }
-  }.joined(separator: ", \n"))]
-)
-""")
+        debugPrint(gameState: model.state)
       } label: {
         VStack {
           Image(systemName: "ladybug.fill")
@@ -375,67 +352,5 @@ extension GameView {
 }
 
 #Preview {
-  var gameState = GameState(suits: .oneSuit)
-//  gameState.completedSets = [
-//    CompletedSet(suit: .heart),
-//    CompletedSet(suit: .heart),
-//    CompletedSet(suit: .club),
-//    CompletedSet(suit: .club),
-//    CompletedSet(suit: .diamond),
-//    CompletedSet(suit: .diamond),
-//    CompletedSet(suit: .spade),
-//    CompletedSet(suit: .spade)
-//  ]
-  
-//  gameState.column1 = CardStack(cards: [Card.Value.four, Card.Value.three, Card.Value.two, Card.Value.ace].map { Card(value: $0, suit: .diamond, isVisible: true) } + Array(Card.Value.allCases).reversed().dropLast().map {
-//    Card(value: $0, suit: .club, isVisible: true)
-//  }, validityIndex: 0)
-//  gameState.column2 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
-//  
-//  gameState.column3 = CardStack(cards: Array(Card.Value.allCases).reversed().dropLast().map {
-//    Card(value: $0, suit: .random, isVisible: true)
-//  }, validityIndex: 0)
-//  gameState.column4 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
-  
-  gameState.column1 = CardStack(
-    cards: Array(Card.Value.allCases).reversed().dropLast().map {
-    Card(value: $0, suit: .club, isVisible: true)
-  }, validityIndex: 0)
-  gameState.column2 = CardStack(
-    cards: Array(Card.Value.allCases).reversed().dropLast().map {
-    Card(value: $0, suit: .club, isVisible: true)
-  }, validityIndex: 0)
-  gameState.column3 = CardStack(
-    cards: Array(Card.Value.allCases).reversed().dropLast().map {
-    Card(value: $0, suit: .club, isVisible: true)
-  }, validityIndex: 0)
-  gameState.column4 = CardStack(
-    cards: Array(Card.Value.allCases).reversed().dropLast().map {
-    Card(value: $0, suit: .club, isVisible: true)
-  }, validityIndex: 0)
-  gameState.column5 = CardStack(
-    cards: Array(Card.Value.allCases).reversed().dropLast().map {
-    Card(value: $0, suit: .club, isVisible: true)
-  }, validityIndex: 0)
-  gameState.column6 = CardStack(
-    cards: Array(Card.Value.allCases).reversed().dropLast().map {
-    Card(value: $0, suit: .club, isVisible: true)
-  }, validityIndex: 0)
-  gameState.column7 = CardStack(
-    cards: Array(Card.Value.allCases).reversed().dropLast().map {
-    Card(value: $0, suit: .club, isVisible: true)
-  }, validityIndex: 0)
-  gameState.column8 = CardStack(
-    cards: Array(Card.Value.allCases).reversed().dropLast().map {
-    Card(value: $0, suit: .club, isVisible: true)
-  }, validityIndex: 0)
-  gameState.column9 = CardStack(
-    cards: Array(repeating: Card.Value.ace, count: 8).map {
-    Card(value: $0, suit: .club, isVisible: true)
-  }, validityIndex: 0)
-  gameState.column10 = CardStack(cards: [], validityIndex: -1)
-  
-  gameState.seconds = Int(60.0 * 59.99)
-  
-  return GameView(gameState: gameState)
+  return GameView(gameState: .almostCompletedSets)
 }

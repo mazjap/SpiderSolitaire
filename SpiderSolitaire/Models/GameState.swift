@@ -210,3 +210,89 @@ extension GameState {
     }
   }
 }
+
+// MARK: - Previews
+extension GameState {
+  static let almostCompletedSets: GameState = {
+    var gameState = GameState(suits: .oneSuit)
+    
+    gameState.column1 = CardStack(
+      cards: Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column2 = CardStack(
+      cards: Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column3 = CardStack(
+      cards: Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column4 = CardStack(
+      cards: Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column5 = CardStack(
+      cards: Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column6 = CardStack(
+      cards: Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column7 = CardStack(
+      cards: Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column8 = CardStack(
+      cards: Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column9 = CardStack(
+      cards: Array(repeating: Card.Value.ace, count: 8).map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column10 = CardStack(cards: [], validityIndex: -1)
+    
+    return gameState
+  }()
+  
+  static let almost60Hours: GameState = {
+    var gameState = GameState(suits: .oneSuit)
+    gameState.seconds = Int(60.0 * 59.99)
+    return gameState
+  }()
+  
+  static let manyCompletedSetsVisualOnly: GameState = {
+    var gameState = GameState(suits: .fourSuits)
+    
+    gameState.completedSets = [
+      CompletedSet(suit: .heart),
+      CompletedSet(suit: .heart),
+      CompletedSet(suit: .club),
+      CompletedSet(suit: .club),
+      CompletedSet(suit: .diamond),
+      CompletedSet(suit: .diamond),
+      CompletedSet(suit: .spade),
+      CompletedSet(suit: .spade)
+    ]
+    
+    return gameState
+  }()
+  
+  static let sameSuitCompletedSetVsDifferingSuitCompletedSet: GameState = {
+    var gameState = GameState(suits: .oneSuit)
+    
+    gameState.column1 = CardStack(cards: [Card.Value.four, Card.Value.three, Card.Value.two, Card.Value.ace].map { Card(value: $0, suit: .diamond, isVisible: true) } + Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column2 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
+    
+    gameState.column3 = CardStack(cards: Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .random, isVisible: true)
+    }, validityIndex: 0)
+    gameState.column4 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
+    
+    return gameState
+  }()
+}
