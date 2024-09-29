@@ -45,31 +45,7 @@ struct GameView: View {
             
             drawStack(width: cardWidth, height: cardHeight)
               .onTapGesture {
-                do {
-                  let draw = try model.popDraw()
-                  // Use a slight delay to allow the view to update
-                  Task {
-                    var indices: [Int]?
-                    
-                    withAnimation {
-                      indices = model.apply(draw: draw)
-                    } completion: {
-                      Task {
-                        model.makeCardsVisible(at: indices ?? [])
-                        try? await Task.sleep(for: .seconds(0.3))
-                        // TODO: - Now check for completed sets
-                        withAnimation {
-                          for i in 0..<10 {
-                            model.checkForCompletedSet(forColumn: i)
-                          }
-                        }
-                      }
-                      
-                    }
-                  }
-                } catch {
-                  print(error)
-                }
+                handleDrawFromStack()
               }
           }
           
@@ -344,7 +320,37 @@ extension GameView {
   }
 }
 
+// MARK: - Non-View Functions
 extension GameView {
+  private func handleDrawFromStack() {
+    do {
+      let draw = try model.popDraw()
+      // Use a slight delay to allow the view to update
+      Task {
+        var indices: [Int]?
+        
+        withAnimation {
+          indices = model.apply(draw: draw)
+        } completion: {
+          Task {
+            model.makeCardsVisible(at: indices ?? [])
+            // Sleep for duration of `CardView` flip animation (0.3s)
+            try? await Task.sleep(for: .seconds(0.3))
+            
+            withAnimation {
+              for i in 0..<10 {
+                model.checkForCompletedSet(forColumn: i)
+              }
+            }
+          }
+          
+        }
+      }
+    } catch {
+      print(error)
+    }
+  }
+  
   private func onGameStart() {
     model.revealTopCardsInAllColumns()
     model.validateAllColumns()
