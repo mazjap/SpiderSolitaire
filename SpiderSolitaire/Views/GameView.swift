@@ -45,7 +45,31 @@ struct GameView: View {
             
             drawStack(width: cardWidth, height: cardHeight)
               .onTapGesture {
-                model.popDrawAndApply()
+                do {
+                  let draw = try model.popDraw()
+                  // Use a slight delay to allow the view to update
+                  Task {
+                    var indices: [Int]?
+                    
+                    withAnimation {
+                      indices = model.apply(draw: draw)
+                    } completion: {
+                      Task {
+                        model.makeCardsVisible(at: indices ?? [])
+                        try? await Task.sleep(for: .seconds(0.3))
+                        // TODO: - Now check for completed sets
+                        withAnimation {
+                          for i in 0..<10 {
+                            model.checkForCompletedSet(forColumn: i)
+                          }
+                        }
+                      }
+                      
+                    }
+                  }
+                } catch {
+                  print(error)
+                }
               }
           }
           
@@ -62,6 +86,28 @@ struct GameView: View {
           controls
         }
         .padding(.horizontal, outerHorizontalPadding)
+        
+        CardAnimationLayer(
+          state: model.animationLayerState,
+          cardStackFrames: cardStackFrames,
+          drawStackFrame: drawStackFrame,
+          completedSetsFrame: completedSetsFrame
+        )
+        .ignoresSafeArea()
+        
+        Rectangle()
+          .fill(.clear)
+          .stroke(Color.red, lineWidth: 4)
+          .frame(width: drawStackFrame.width, height: drawStackFrame.height)
+          .position(x: drawStackFrame.midX, y: drawStackFrame.midY)
+          .ignoresSafeArea()
+        
+        Rectangle()
+          .fill(.clear)
+          .stroke(Color.purple, lineWidth: 4)
+          .frame(width: completedSetsFrame.width, height: completedSetsFrame.height)
+          .position(x: completedSetsFrame.midX, y: completedSetsFrame.midY)
+          .ignoresSafeArea()
       }
     }
     .namespace(namespace)
@@ -211,7 +257,11 @@ GameState(
       
       Button {
         withAnimation {
-          model.popPreviousMoveAndApply()
+          model.popPreviousMoveAndApply { completion in
+            withAnimation {
+              completion()
+            }
+          }
         }
       } label: {
         VStack {
@@ -337,15 +387,53 @@ extension GameView {
 //    CompletedSet(suit: .spade)
 //  ]
   
-  gameState.column1 = CardStack(cards: [Card.Value.four, Card.Value.three, Card.Value.two, Card.Value.ace].map { Card(value: $0, suit: .diamond, isVisible: true) } + Array(Card.Value.allCases).reversed().dropLast().map {
+//  gameState.column1 = CardStack(cards: [Card.Value.four, Card.Value.three, Card.Value.two, Card.Value.ace].map { Card(value: $0, suit: .diamond, isVisible: true) } + Array(Card.Value.allCases).reversed().dropLast().map {
+//    Card(value: $0, suit: .club, isVisible: true)
+//  }, validityIndex: 0)
+//  gameState.column2 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
+//  
+//  gameState.column3 = CardStack(cards: Array(Card.Value.allCases).reversed().dropLast().map {
+//    Card(value: $0, suit: .random, isVisible: true)
+//  }, validityIndex: 0)
+//  gameState.column4 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
+  
+  gameState.column1 = CardStack(
+    cards: Array(Card.Value.allCases).reversed().dropLast().map {
     Card(value: $0, suit: .club, isVisible: true)
   }, validityIndex: 0)
-  gameState.column2 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
-  
-  gameState.column3 = CardStack(cards: Array(Card.Value.allCases).reversed().dropLast().map {
-    Card(value: $0, suit: .random, isVisible: true)
+  gameState.column2 = CardStack(
+    cards: Array(Card.Value.allCases).reversed().dropLast().map {
+    Card(value: $0, suit: .club, isVisible: true)
   }, validityIndex: 0)
-  gameState.column4 = CardStack(cards: [Card(value: .ace, suit: .club, isVisible: true)], validityIndex: 0)
+  gameState.column3 = CardStack(
+    cards: Array(Card.Value.allCases).reversed().dropLast().map {
+    Card(value: $0, suit: .club, isVisible: true)
+  }, validityIndex: 0)
+  gameState.column4 = CardStack(
+    cards: Array(Card.Value.allCases).reversed().dropLast().map {
+    Card(value: $0, suit: .club, isVisible: true)
+  }, validityIndex: 0)
+  gameState.column5 = CardStack(
+    cards: Array(Card.Value.allCases).reversed().dropLast().map {
+    Card(value: $0, suit: .club, isVisible: true)
+  }, validityIndex: 0)
+  gameState.column6 = CardStack(
+    cards: Array(Card.Value.allCases).reversed().dropLast().map {
+    Card(value: $0, suit: .club, isVisible: true)
+  }, validityIndex: 0)
+  gameState.column7 = CardStack(
+    cards: Array(Card.Value.allCases).reversed().dropLast().map {
+    Card(value: $0, suit: .club, isVisible: true)
+  }, validityIndex: 0)
+  gameState.column8 = CardStack(
+    cards: Array(Card.Value.allCases).reversed().dropLast().map {
+    Card(value: $0, suit: .club, isVisible: true)
+  }, validityIndex: 0)
+  gameState.column9 = CardStack(
+    cards: Array(repeating: Card.Value.ace, count: 8).map {
+    Card(value: $0, suit: .club, isVisible: true)
+  }, validityIndex: 0)
+  gameState.column10 = CardStack(cards: [], validityIndex: -1)
   
   gameState.seconds = Int(60.0 * 59.99)
   
