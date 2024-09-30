@@ -345,4 +345,20 @@ extension GameState {
     
     return gameState
   }()
+  
+  static let drawFromStackHint: GameState = {
+    var gameState = GameState(suits: .oneSuit)
+    gameState.column1 = CardStack(cards: [Card(value: .ace, suit: .club)], validityIndex: 0)
+    gameState.column2 = CardStack(cards: [Card(value: .ace, suit: .club)], validityIndex: 0)
+    gameState.column3 = CardStack(cards: [Card(value: .ace, suit: .club)], validityIndex: 0)
+    gameState.column4 = CardStack(cards: [Card(value: .ace, suit: .club)], validityIndex: 0)
+    gameState.column5 = CardStack(cards: [Card(value: .ace, suit: .club)], validityIndex: 0)
+    gameState.column6 = CardStack(cards: [Card(value: .ace, suit: .club)], validityIndex: 0)
+    gameState.column7 = CardStack(cards: [Card(value: .ace, suit: .club)], validityIndex: 0)
+    gameState.column8 = CardStack(cards: [Card(value: .ace, suit: .club)], validityIndex: 0)
+    gameState.column9 = CardStack(cards: [Card(value: .ace, suit: .club)], validityIndex: 0)
+    gameState.column10 = CardStack(cards: [Card(value: .ace, suit: .club)], validityIndex: 0)
+    
+    return gameState
+  }()
 }

@@ -59,6 +59,8 @@ extension GameViewModel {
         .move(columnIndex: columnIndex, card: Array(self[columnIndex].cards[validityIndex...]), destinationColumnIndex: destinationColumnIndex)
     case let .moveAnyToFreeSpace(freeSpaceIndex):
         .moveAnyToFreeSpace(freeSpaceIndex: freeSpaceIndex)
+    case .drawFromStack:
+        .drawFromStack
     }
   }
   
@@ -142,7 +144,9 @@ extension GameViewModel {
       hints.append(contentsOf: freeSpaceColumns.map { Hint.moveAnyToFreeSpace(freeSpaceIndex: $0) })
     }
     
-    #warning("TODO: - If hints are empty, add draw to hints. If draws are also empty, that's game over")
+    if hints.isEmpty {
+      hints.append(.drawFromStack)
+    }
     
     hintsForHashValue = (newHash, hints)
   }

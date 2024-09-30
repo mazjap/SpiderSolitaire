@@ -367,5 +367,5 @@ extension GameView {
 }
 
 #Preview {
-  return GameView(gameState: .brokenUpCompletedSet)
+  return GameView(gameState: .drawFromStackHint)
 }
