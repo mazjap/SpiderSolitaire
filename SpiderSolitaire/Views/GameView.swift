@@ -70,20 +70,6 @@ struct GameView: View {
           completedSetsFrame: completedSetsFrame
         )
         .ignoresSafeArea()
-        
-        Rectangle()
-          .fill(.clear)
-          .stroke(Color.red, lineWidth: 4)
-          .frame(width: drawStackFrame.width, height: drawStackFrame.height)
-          .position(x: drawStackFrame.midX, y: drawStackFrame.midY)
-          .ignoresSafeArea()
-        
-        Rectangle()
-          .fill(.clear)
-          .stroke(Color.purple, lineWidth: 4)
-          .frame(width: completedSetsFrame.width, height: completedSetsFrame.height)
-          .position(x: completedSetsFrame.midX, y: completedSetsFrame.midY)
-          .ignoresSafeArea()
       }
     }
     .namespace(namespace)
