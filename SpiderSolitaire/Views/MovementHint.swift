@@ -18,10 +18,9 @@ struct MovementHint: View {
   private let toFrame: CGRect
   
   private var fromOffset: CGPoint {
-    let fromBottom = fromFrame.maxY - fromFrame.minY
-    let cardStackBottom = cardStackFrame.maxY - cardStackFrame.minY
+    let halfCurrentStackHeight = cardStackFrame.height / 2
     
-    return CGPoint(x: fromFrame.midX, y: fromFrame.midY + (fromBottom - cardStackBottom))
+    return CGPoint(x: fromFrame.midX, y: fromFrame.maxY - halfCurrentStackHeight)
   }
   
   private var toOffset: CGPoint {
@@ -41,6 +40,10 @@ struct MovementHint: View {
   
   var body: some View {
     ZStack {
+      AuraView()
+        .cardSize(cardStackFrame.size)
+        .position(isAtDesination ? toOffset : fromOffset)
+      
       if isAtDesination {
         CardStackView(cardStack: CardStack(cards: cards, validityIndex: -1), frame: $cardStackFrame, cardWidth: width, cardHeight: height, onDragStart: {}, onDragEnd: {_,_ in false})
           .opacity(0.75)
