@@ -159,7 +159,7 @@ extension GameViewModel {
     }
   }
   
-  func popPreviousMoveAndApply(onCompletion: @escaping (@escaping () -> Void) -> Void) {
+  func popPreviousMoveAndApply(onCompletion: @escaping (UndoAction, @escaping () -> Void) -> Void) {
     switch state.previousMoves.popLast() {
     case .draw(let id):
       let defaultCard = Card(value: .ace, suit: .diamond)
@@ -172,7 +172,7 @@ extension GameViewModel {
       }
       inProgressDraw = draw.cards
       
-      onCompletion { [weak self] in
+      onCompletion(.draw) { [weak self] in
         draw.makeHidden()
         self?.inProgressDraw = nil
         self?.state.draws.append(draw)
@@ -202,7 +202,7 @@ extension GameViewModel {
       
       inProgressSet = cards
       
-      onCompletion { [weak self] in
+      onCompletion(.set) { [weak self] in
         self?.state[columnIndex].cards.append(contentsOf: cards)
         self?.inProgressSet = nil
         

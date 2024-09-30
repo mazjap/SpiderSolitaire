@@ -201,9 +201,12 @@ extension GameView {
       
       Button {
         withAnimation(.linear(duration: 0.3)) {
-          model.popPreviousMoveAndApply { completion in
+          model.popPreviousMoveAndApply { action, completion in
             Task {
-              try? await Task.sleep(for: .seconds(0.3))
+              if action == .draw {
+                try? await Task.sleep(for: .seconds(0.3))
+              }
+              
               withAnimation(.linear(duration: 0.3)) {
                 completion()
               }
