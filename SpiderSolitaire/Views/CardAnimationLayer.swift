@@ -59,7 +59,7 @@ struct CardAnimationLayer: View {
       }
       
       if let currentHint {
-        // TODO: - Hint overlay
+        hintOverlay(currentHint, width: width, height: height)
       }
       
       if showsCardOverlayTesting {
@@ -83,6 +83,25 @@ struct CardAnimationLayer: View {
     return ForEach(cards) { card in
       CardView(for: card, width: width, height: height, isUsable: true)
         .position(x: frame.minX + (width / 2) + (Double(completedSetCount) * completedSetSpacing), y: frame.midY)
+    }
+  }
+  
+  private func hintOverlay(_ hint: HintDisplay, width: Double, height: Double) -> some View {
+    Group {
+      switch hint {
+      case .move(let fromColumn, let cards, let toColumn):
+        MovementHint(
+          fromFrame: cardStackFrames[fromColumn],
+          cards: cards,
+          toFrame: cardStackFrames[toColumn],
+          width: width,
+          height: height
+        )
+      case .moveAnyToFreeSpace(let freeSpaceIndex):
+        FreeSpaceHint(
+          columnFrame: cardStackFrames[freeSpaceIndex]
+        )
+      }
     }
   }
   
