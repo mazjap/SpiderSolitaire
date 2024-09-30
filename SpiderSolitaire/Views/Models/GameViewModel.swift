@@ -67,34 +67,46 @@ extension GameViewModel {
   }
   
   func calculateHints() {
+    #warning("TODO: - Fix bug where a hidden card is included in hint")
+    
     let newHash = state.hashValue
     guard hintsForHashValue?.hash != newHash else { return }
     
     var hints = [Hint]()
-    //    var brokenUpCompletedSets = [(from: Int, index: Int, to: Int)]() TODO: - Broken up completed sets
+    #warning("TODO: - Implement broken up completed sets. If one stack contains the needed cards to complete another stack, but it must be broken up, it should be considered a hint")
+    var brokenUpCompletedSets = [(from: Int, index: Int, to: Int)]()
     var freeSpaceColumns = [Int]()
     
-    // FIXME: - O(n^2), perhaps two seperate loops, first adding bottom card to dict ([Card.Value : [ColumnIndex]]), second comparing card at validity index to dictionary's values
+    var bottomCardsToColumnIndexMapping = [Card.Value : [Int]]()
+    
+    for columnIndex in 0..<10 {
+      guard let bottomCard = self[columnIndex].cards.last else {
+        freeSpaceColumns.append(columnIndex)
+        continue
+      }
+      
+      bottomCardsToColumnIndexMapping[bottomCard.value, default: []].append(columnIndex)
+    }
+    
     for columnIndex in 0..<10 {
       let stack = self[columnIndex]
       guard !stack.isEmpty else {
-        freeSpaceColumns.append(columnIndex)
         continue
       }
       
       let cardToMove = stack[stack.validityIndex]
       
-      let range = Array(0..<columnIndex) + (columnIndex == 9 ? [] : Array((columnIndex + 1)..<10))
-      for columnIndexToCompare in range {
-        if let cardToCompare = self[columnIndexToCompare].cards.last,
-           cardToCompare.suit == cardToMove.suit,
-           cardToCompare.value == cardToMove.value.larger {
-          hints.append(.move(columnIndex: columnIndex, validityIndex: stack.validityIndex, destinationColumnIndex: columnIndexToCompare))
-        }
-      }
+      guard let largerValue = cardToMove.value.larger,
+            let indices = bottomCardsToColumnIndexMapping[largerValue]
+      else { continue }
+      
+      hints.append(
+        contentsOf: indices
+          .filter { $0 != columnIndex }
+          .map { .move(columnIndex: columnIndex, validityIndex: stack.validityIndex, destinationColumnIndex: $0) })
     }
     
-    //    hints.append(contentsOf: brokenUpCompletedSets.map { Hint.move(columnIndex: $0.from, validityIndex: $0.index, destinationColumnIndex: $0.to) })
+    hints.append(contentsOf: brokenUpCompletedSets.map { Hint.move(columnIndex: $0.from, validityIndex: $0.index, destinationColumnIndex: $0.to) })
     hints.append(contentsOf: freeSpaceColumns.map { Hint.moveAnyToFreeSpace(freeSpaceIndex: $0) })
     
     hintsForHashValue = (newHash, hints)
