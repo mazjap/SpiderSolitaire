@@ -24,7 +24,7 @@ class GameViewModel {
   }
   
   var animationLayerState: AnimationLayerState {
-    AnimationLayerState(inProgressDraw: inProgressDraw, inProgressSet: inProgressSet, drawCount: drawCount, completedSetCount: completedSetCount)
+    AnimationLayerState(currentHint: currentHint, inProgressDraw: inProgressDraw, inProgressSet: inProgressSet, drawCount: drawCount, completedSetCount: completedSetCount)
   }
   
   private(set) var currentHint: HintDisplay?
