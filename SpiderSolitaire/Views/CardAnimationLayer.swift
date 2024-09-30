@@ -7,6 +7,11 @@ struct CardAnimationLayer: View {
   private let drawStackSpacing: Double
   private let completedSetsFrame: CGRect
   private let completedSetSpacing: Double
+  private let showsCardOverlayTesting = false
+  
+  private var currentHint: HintDisplay? {
+    state.currentHint
+  }
   
   private var inProgressDraw: [Card]? {
     state.inProgressDraw
@@ -46,22 +51,51 @@ struct CardAnimationLayer: View {
       let height = size.height
       
       if let cards = inProgressDraw {
-        ForEach(cards) { card in
-          let frame = drawStackFrame
-          
-          CardView(for: card, width: width, height: height, isUsable: true)
-            .position(x: frame.maxX - (width / 2) - (Double(drawCount) * drawStackSpacing), y: frame.midY)
-        }
+        drawOverlay(cards, width: width, height: height)
       }
       
       if let cards = inProgressSet {
-        let frame = completedSetsFrame
-        
-        ForEach(cards) { card in
-          CardView(for: card, width: width, height: height, isUsable: true)
-            .position(x: frame.minX + (width / 2) + (Double(completedSetCount) * completedSetSpacing), y: frame.midY)
-        }
+        setOverlay(cards, width: width, height: height)
       }
+      
+      if let currentHint {
+        // TODO: - Hint overlay
+      }
+      
+      if showsCardOverlayTesting {
+        cardOverlayTesting
+      }
+    }
+  }
+  
+  private func drawOverlay(_ cards: [Card], width: Double, height: Double) -> some View {
+    ForEach(cards) { card in
+      let frame = drawStackFrame
+      
+      CardView(for: card, width: width, height: height, isUsable: true)
+        .position(x: frame.maxX - (width / 2) - (Double(drawCount) * drawStackSpacing), y: frame.midY)
+    }
+  }
+  
+  private func setOverlay(_ cards: [Card], width: Double, height: Double) -> some View {
+    let frame = completedSetsFrame
+    
+    return ForEach(cards) { card in
+      CardView(for: card, width: width, height: height, isUsable: true)
+        .position(x: frame.minX + (width / 2) + (Double(completedSetCount) * completedSetSpacing), y: frame.midY)
+    }
+  }
+  
+  private var cardOverlayTesting: some View {
+    ZStack {
+      ForEach(Array(cardStackFrames.enumerated()), id: \.offset) { (index, frame) in
+        Rectangle()
+          .fill(Color.red.opacity(0.5))
+          .border(.blue, width: 1)
+          .frame(width: frame.width, height: frame.height)
+          .position(x: frame.midX, y: frame.midY)
+      }
+      .allowsHitTesting(false)
     }
   }
 }
