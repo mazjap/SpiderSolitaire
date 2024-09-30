@@ -257,6 +257,56 @@ extension GameState {
     return gameState
   }()
   
+  static let brokenUpCompletedSet: GameState = {
+    var gameState = GameState(suits: .oneSuit)
+    
+    gameState.column1 = CardStack(
+      cards: Array(Card.Value.allCases).reversed().dropLast().map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    
+    gameState.column2 = CardStack(
+      cards: [Card.Value.two, .ace].map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    
+    gameState.column3 = CardStack(cards: [], validityIndex: -1)
+    gameState.column4 = CardStack(cards: [], validityIndex: -1)
+    gameState.column5 = CardStack(cards: [], validityIndex: -1)
+    gameState.column6 = CardStack(cards: [], validityIndex: -1)
+    gameState.column7 = CardStack(cards: [], validityIndex: -1)
+    gameState.column8 = CardStack(cards: [], validityIndex: -1)
+    gameState.column9 = CardStack(cards: [], validityIndex: -1)
+    gameState.column10 = CardStack(cards: [], validityIndex: -1)
+    
+    return gameState
+  }()
+  
+  static let completedSetHalves: GameState = {
+    var gameState = GameState(suits: .oneSuit)
+    
+    gameState.column1 = CardStack(
+      cards: [Card.Value.king, .queen, .jack, .ten, .nine, .eight, .seven].map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    
+    gameState.column2 = CardStack(
+      cards: [Card.Value.six, .five, .four, .three, .two, .ace].map {
+      Card(value: $0, suit: .club, isVisible: true)
+    }, validityIndex: 0)
+    
+    gameState.column3 = CardStack(cards: [], validityIndex: -1)
+    gameState.column4 = CardStack(cards: [], validityIndex: -1)
+    gameState.column5 = CardStack(cards: [], validityIndex: -1)
+    gameState.column6 = CardStack(cards: [], validityIndex: -1)
+    gameState.column7 = CardStack(cards: [], validityIndex: -1)
+    gameState.column8 = CardStack(cards: [], validityIndex: -1)
+    gameState.column9 = CardStack(cards: [], validityIndex: -1)
+    gameState.column10 = CardStack(cards: [], validityIndex: -1)
+    
+    return gameState
+  }()
+  
   static let almost60Hours: GameState = {
     var gameState = GameState(suits: .oneSuit)
     gameState.seconds = Int(60.0 * 59.99)
