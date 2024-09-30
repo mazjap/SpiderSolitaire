@@ -12,6 +12,9 @@ struct GameView: View {
   
   private let backgroundColor = Color.green.mix(with: .black, by: 0.2)
   
+  private let completedSetSpacing: Double = 30
+  private let drawStackSpacing: Double = 8
+  
   private let outerHorizontalPadding: Double = 4
   private let interCardSpacing: Double = 5
   private var totalCardSpacing: Double { (10 - 1) * interCardSpacing }
@@ -67,7 +70,9 @@ struct GameView: View {
           state: model.animationLayerState,
           cardStackFrames: cardStackFrames,
           drawStackFrame: drawStackFrame,
-          completedSetsFrame: completedSetsFrame
+          drawStackSpacing: drawStackSpacing,
+          completedSetsFrame: completedSetsFrame,
+          completedSetSpacing: completedSetSpacing
         )
         .ignoresSafeArea()
       }
@@ -234,13 +239,11 @@ extension GameView {
 // MARK: - View Functions
 extension GameView {
   private func completedSets(width: Double, height: Double) -> some View {
-    let subsequentCardOffset: Double = 30
-    
     return GeometryReader { geometry in
       ZStack {
         ForEach(Array(model.state.completedSets.enumerated()), id: \.element.id) { (index, set) in
           CardView(for: .completedSet(set), width: width, height: height, isUsable: true)
-            .offset(x: subsequentCardOffset * Double(index))
+            .offset(x: completedSetSpacing * Double(index))
         }
       }
       .onChange(of: model.state.completedSets, initial: true) {
@@ -248,19 +251,18 @@ extension GameView {
       }
     }
     .frame(
-      width: width + (subsequentCardOffset * Double(max(0, model.completedSetCount - 1))),
+      width: width + (completedSetSpacing * Double(max(0, model.completedSetCount - 1))),
       height: height)
   }
   
   private func drawStack(width: Double, height: Double) -> some View {
-    let subsequentCardOffset: Double = 8
-    let maxWidth = width + (subsequentCardOffset * Double(max(0, model.drawCount - 1)))
+    let maxWidth = width + (drawStackSpacing * Double(max(0, model.drawCount - 1)))
     
     return GeometryReader { geometry in
       ZStack {
         ForEach(Array(model.state.draws.enumerated()), id: \.element.id) { (index, set) in
           CardView(for: .hidden, width: width, height: height, isUsable: true)
-            .offset(x: (maxWidth - width) / 2 - subsequentCardOffset * Double(index))
+            .offset(x: (maxWidth - width) / 2 - drawStackSpacing * Double(index))
         }
       }
       .frame(

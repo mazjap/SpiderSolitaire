@@ -4,7 +4,9 @@ struct CardAnimationLayer: View {
   private let state: AnimationLayerState
   private let cardStackFrames: [CGRect]
   private let drawStackFrame: CGRect
+  private let drawStackSpacing: Double
   private let completedSetsFrame: CGRect
+  private let completedSetSpacing: Double
   
   private var inProgressDraw: [Card]? {
     state.inProgressDraw
@@ -28,11 +30,13 @@ struct CardAnimationLayer: View {
     return CGSize(width: frame.width, height: frame.width * 1.5)
   }
   
-  init(state: AnimationLayerState, cardStackFrames: [CGRect], drawStackFrame: CGRect, completedSetsFrame: CGRect) {
+  init(state: AnimationLayerState, cardStackFrames: [CGRect], drawStackFrame: CGRect, drawStackSpacing: Double, completedSetsFrame: CGRect, completedSetSpacing: Double) {
     self.state = state
     self.cardStackFrames = cardStackFrames
     self.drawStackFrame = drawStackFrame
+    self.drawStackSpacing = drawStackSpacing
     self.completedSetsFrame = completedSetsFrame
+    self.completedSetSpacing = completedSetSpacing
   }
   
   var body: some View {
@@ -46,7 +50,7 @@ struct CardAnimationLayer: View {
           let frame = drawStackFrame
           
           CardView(for: card, width: width, height: height, isUsable: true)
-            .position(x: frame.maxX - (width / 2) - (Double(drawCount) * 8), y: frame.midY)
+            .position(x: frame.maxX - (width / 2) - (Double(drawCount) * drawStackSpacing), y: frame.midY)
         }
       }
       
@@ -55,7 +59,7 @@ struct CardAnimationLayer: View {
         
         ForEach(cards) { card in
           CardView(for: card, width: width, height: height, isUsable: true)
-            .position(x: frame.minX + (width / 2) + (Double(completedSetCount) * 30), y: frame.midY)
+            .position(x: frame.minX + (width / 2) + (Double(completedSetCount) * completedSetSpacing), y: frame.midY)
         }
       }
     }
