@@ -166,12 +166,14 @@ extension GameViewModel {
       var draw = Draw(column1: defaultCard, column2: defaultCard, column3: defaultCard, column4: defaultCard, column5: defaultCard, column6: defaultCard, column7: defaultCard, column8: defaultCard, column9: defaultCard, column10: defaultCard, id: id)
       
       state.mutateColumns { stack, index in
-        guard let card = stack.cards.popLast() else { return }
+        guard var card = stack.cards.popLast() else { return }
+        card.isVisible = false
         draw[index] = card
       }
       inProgressDraw = draw.cards
       
       onCompletion { [weak self] in
+        draw.makeHidden()
         self?.inProgressDraw = nil
         self?.state.draws.append(draw)
         self?.validateAllColumns()

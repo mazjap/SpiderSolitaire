@@ -195,11 +195,11 @@ extension GameView {
       Spacer()
       
       Button {
-        withAnimation(.linear(duration: 0.5)) {
+        withAnimation(.linear(duration: 0.3)) {
           model.popPreviousMoveAndApply { completion in
             Task {
-              try? await Task.sleep(for: .seconds(0.5))
-              withAnimation {
+              try? await Task.sleep(for: .seconds(0.3))
+              withAnimation(.linear(duration: 0.3)) {
                 completion()
               }
             }
