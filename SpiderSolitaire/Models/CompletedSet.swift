@@ -1,6 +1,6 @@
 import Foundation
 
-struct CompletedSet: Equatable, Identifiable {
+struct CompletedSet: Hashable, Identifiable {
   var suit: Card.Suit
   var id: UUID
   

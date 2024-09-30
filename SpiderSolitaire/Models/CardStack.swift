@@ -1,6 +1,6 @@
 import Foundation
 
-struct CardStack: Equatable {
+struct CardStack: Hashable {
   var cards: [Card]
   var validityIndex: Int
   

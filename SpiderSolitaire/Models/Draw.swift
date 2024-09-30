@@ -1,6 +1,6 @@
 import Foundation
 
-struct Draw: Equatable, Identifiable {
+struct Draw: Hashable, Identifiable {
   var column1: Card
   var column2: Card
   var column3: Card
