@@ -11,7 +11,7 @@ class GameViewModel {
   @ObservationIgnored
   nonisolated(unsafe) private var timerCancellable: AnyCancellable?
   private let timerLock = NSLock()
-  private var hintsForHashValue: (hash: Int, [Move])?
+  private(set) var hintsForHashValue: (hash: Int, hints: [Hint])?
   private var inProgressDraw: [Card]?
   private var inProgressSet: [Card]?
   
@@ -26,6 +26,8 @@ class GameViewModel {
   var animationLayerState: AnimationLayerState {
     AnimationLayerState(inProgressDraw: inProgressDraw, inProgressSet: inProgressSet, drawCount: drawCount, completedSetCount: completedSetCount)
   }
+  
+  private(set) var currentHint: HintDisplay?
   
   private let formatter: DateComponentsFormatter = {
     let formatter = DateComponentsFormatter()
@@ -49,6 +51,21 @@ class GameViewModel {
 
 // MARK: - State mutating functions
 extension GameViewModel {
+  func display(hint: Hint) {
+    startTimer()
+    
+    currentHint = switch hint {
+    case let .move(columnIndex, validityIndex, destinationColumnIndex):
+        .move(columnIndex: columnIndex, card: Array(self[columnIndex].cards[validityIndex...]), destinationColumnIndex: destinationColumnIndex)
+    case let .moveAnyToFreeSpace(freeSpaceIndex):
+        .moveAnyToFreeSpace(freeSpaceIndex: freeSpaceIndex)
+    }
+  }
+  
+  func clearHint() {
+    currentHint = nil
+  }
+  
   func revealTopCardsInAllColumns() {
     state.mutateColumns { column in
       guard !column.cards.isEmpty else { return }
@@ -289,6 +306,7 @@ extension GameViewModel {
   
   private func incrementMoves() {
     state.moveCount += 1
+    currentHint = nil
     startTimer()
   }
 }
