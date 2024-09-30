@@ -101,6 +101,8 @@ struct CardAnimationLayer: View {
         FreeSpaceHint(
           columnFrame: cardStackFrames[freeSpaceIndex]
         )
+      case .drawFromStack:
+        DrawStackHint(drawStackFrame: drawStackFrame)
       }
     }
   }
