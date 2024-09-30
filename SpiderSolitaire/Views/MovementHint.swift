@@ -41,10 +41,6 @@ struct MovementHint: View {
   
   var body: some View {
     ZStack {
-      AuraView()
-        .cardSize(cardStackFrame.size)
-        .position(isAtDesination ? toOffset : fromOffset)
-      
       if isAtDesination {
         CardStackView(cardStack: CardStack(cards: cards, validityIndex: -1), frame: $cardStackFrame, cardWidth: width, cardHeight: height, onDragStart: {}, onDragEnd: {_,_ in false})
           .opacity(0.75)
@@ -57,6 +53,7 @@ struct MovementHint: View {
           .matchedGeometryEffect(id: cards.map(\.id.uuidString).joined(), in: namespace)
       }
     }
+    .transition(.scale(scale: 1))
     .onChange(of: cards, initial: true) {
       animateChange()
     }
