@@ -57,6 +57,24 @@ extension Card {
       case .king: nil
       }
     }
+    
+    var smaller: Value? {
+      switch self {
+      case .ace: nil
+      case .two: .ace
+      case .three: .two
+      case .four: .three
+      case .five: .four
+      case .six: .five
+      case .seven: .six
+      case .eight: .seven
+      case .nine: .eight
+      case .ten: .nine
+      case .jack: .ten
+      case .queen: .jack
+      case .king: .queen
+      }
+    }
   }
   
   enum Suit: String, CaseIterable {
@@ -96,5 +114,29 @@ extension Card.Suit {
     case 2: .spade
     default: .club
     }
+  }
+}
+
+extension Card.Value {
+  var intValue: Int {
+    switch self {
+    case .ace: 1
+    case .two: 2
+    case .three: 3
+    case .four: 4
+    case .five: 5
+    case .six: 6
+    case .seven: 7
+    case .eight: 8
+    case .nine: 9
+    case .ten: 10
+    case .jack: 11
+    case .queen: 12
+    case .king: 13
+    }
+  }
+  
+  static func - (lhs: Card.Value, rhs: Card.Value) -> Int {
+    lhs.intValue - rhs.intValue
   }
 }

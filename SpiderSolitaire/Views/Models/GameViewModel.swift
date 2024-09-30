@@ -67,34 +67,64 @@ extension GameViewModel {
   }
   
   func calculateHints() {
-    #warning("TODO: - Fix bug where a hidden card is included in hint")
-    
     let newHash = state.hashValue
     guard hintsForHashValue?.hash != newHash else { return }
     
     var hints = [Hint]()
-    #warning("TODO: - Implement broken up completed sets. If one stack contains the needed cards to complete another stack, but it must be broken up, it should be considered a hint")
-    var brokenUpCompletedSets = [(from: Int, index: Int, to: Int)]()
-    var freeSpaceColumns = [Int]()
+    var containsHiddenCards = false
     
+    // Buffer mapping for needed top card for each column
     var bottomCardsToColumnIndexMapping = [Card.Value : [Int]]()
+    
+    // Buffer mapping for completed sets that a missing a select amount of cards
+    var neededToCompleteSetMapping = [Card.Value : [Int]]()
     
     for columnIndex in 0..<10 {
       guard let bottomCard = self[columnIndex].cards.last else {
-        freeSpaceColumns.append(columnIndex)
         continue
       }
       
       bottomCardsToColumnIndexMapping[bottomCard.value, default: []].append(columnIndex)
+      
+      if isComplete(forColumn: columnIndex, fromValue: bottomCard.value) {
+        neededToCompleteSetMapping[bottomCard.value.smaller!, default: []].append(columnIndex)
+      }
     }
+    
+    var brokenUpCompletedSets = [(from: Int, cardIndex: Int, to: Int)]()
+    var freeSpaceColumns = [Int]()
     
     for columnIndex in 0..<10 {
       let stack = self[columnIndex]
       guard !stack.isEmpty else {
+        freeSpaceColumns.append(columnIndex)
         continue
       }
       
+      if !containsHiddenCards,
+         let isVisible = stack.cards.first?.isVisible,
+         !isVisible {
+        containsHiddenCards = true
+      }
+      
       let cardToMove = stack[stack.validityIndex]
+      
+      if isComplete(forColumn: columnIndex, toValue: cardToMove.value) {
+        var lowerValue = cardToMove.value.smaller
+        var cardIndex = stack.validityIndex + 1
+        var toBreak = [(cardIndex: Int, toColumnIndex: Int)]()
+        while let currentValue = lowerValue {
+          toBreak.append(
+            contentsOf: neededToCompleteSetMapping[currentValue, default: []]
+              .map { (cardIndex: cardIndex, toColumnIndex: $0) }
+          )
+          
+          lowerValue = currentValue.smaller
+          cardIndex += 1
+        }
+        
+        brokenUpCompletedSets.append(contentsOf: toBreak.map { (from: columnIndex, cardIndex: $0.cardIndex, to: $0.toColumnIndex) })
+      }
       
       guard let largerValue = cardToMove.value.larger,
             let indices = bottomCardsToColumnIndexMapping[largerValue]
@@ -106,8 +136,13 @@ extension GameViewModel {
           .map { .move(columnIndex: columnIndex, validityIndex: stack.validityIndex, destinationColumnIndex: $0) })
     }
     
-    hints.append(contentsOf: brokenUpCompletedSets.map { Hint.move(columnIndex: $0.from, validityIndex: $0.index, destinationColumnIndex: $0.to) })
-    hints.append(contentsOf: freeSpaceColumns.map { Hint.moveAnyToFreeSpace(freeSpaceIndex: $0) })
+    hints.append(contentsOf: brokenUpCompletedSets.map { Hint.move(columnIndex: $0.from, validityIndex: $0.cardIndex, destinationColumnIndex: $0.to) })
+    
+    if containsHiddenCards {
+      hints.append(contentsOf: freeSpaceColumns.map { Hint.moveAnyToFreeSpace(freeSpaceIndex: $0) })
+    }
+    
+    #warning("TODO: - If hints are empty, add draw to hints. If draws are also empty, that's game over")
     
     hintsForHashValue = (newHash, hints)
   }
@@ -278,25 +313,31 @@ extension GameViewModel {
     incrementMoves()
   }
   
-  func checkForCompletedSet(forColumn columnIndex: Int) {
-    guard self[columnIndex].count >= 13,
+  /// Determines if the cards in the provided card stack are in order, from fromValue (ace) to toValue (king)
+  private func isComplete(forColumn columnIndex: Int, fromValue: Card.Value = .ace, toValue: Card.Value = .king) -> Bool {
+    guard self[columnIndex].count >= toValue - fromValue + 1,
           let last = self[columnIndex].cards.last,
-          last.value == .ace
-    else { return }
+          last.value == fromValue
+    else { return false }
     
-    let suit = last.suit
-    var lastValue = last.value
+    var finalValue = last.value
     
-    for card in self[columnIndex].cards.dropLast().reversed() where card.isVisible {
+    for card in self[columnIndex].usableCards.dropLast().reversed() where card.isVisible {
       guard card.isVisible,
-            card.value == lastValue.larger,
+            card.value == finalValue.larger,
             card.suit == last.suit
       else { break }
       
-      lastValue = card.value
+      finalValue = card.value
     }
     
-    guard lastValue == .king else { return }
+    guard finalValue == toValue else { return false }
+    return true
+  }
+  
+  func checkForCompletedSet(forColumn columnIndex: Int) {
+    guard let suit = self[columnIndex].cards.last?.suit else { return }
+    guard isComplete(forColumn: columnIndex) else { return }
     
     let completedCards = self[columnIndex].cards.suffix(13)
     self[columnIndex].cards.removeLast(13)
@@ -329,7 +370,8 @@ extension GameViewModel {
     }
     
     for cardIndex in self[columnIndex].cards.indices.dropLast().reversed() {
-      guard self[columnIndex][cardIndex].value == self[columnIndex][cardIndex + 1].value.larger,
+      guard self[columnIndex][cardIndex].isVisible,
+            self[columnIndex][cardIndex].value == self[columnIndex][cardIndex + 1].value.larger,
             self[columnIndex][cardIndex].suit == lastCard.suit
       else {
         self[columnIndex].validityIndex = cardIndex + 1

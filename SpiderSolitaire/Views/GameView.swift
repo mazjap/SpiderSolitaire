@@ -367,5 +367,5 @@ extension GameView {
 }
 
 #Preview {
-  return GameView(gameState: .almostCompletedSets)
+  return GameView(gameState: .brokenUpCompletedSet)
 }

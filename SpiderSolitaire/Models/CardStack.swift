@@ -43,3 +43,9 @@ extension CardStack {
     cards.count
   }
 }
+
+extension CardStack {
+  var usableCards: [Card].SubSequence {
+    cards[validityIndex...]
+  }
+}
