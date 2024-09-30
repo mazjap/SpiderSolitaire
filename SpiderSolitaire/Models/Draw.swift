@@ -77,6 +77,19 @@ extension Draw {
     column9.isVisible = true
     column10.isVisible = true
   }
+  
+  mutating func makeHidden() {
+    column1.isVisible = false
+    column2.isVisible = false
+    column3.isVisible = false
+    column4.isVisible = false
+    column5.isVisible = false
+    column6.isVisible = false
+    column7.isVisible = false
+    column8.isVisible = false
+    column9.isVisible = false
+    column10.isVisible = false
+  }
 }
 
 extension Draw {
