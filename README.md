@@ -6,6 +6,9 @@
 - [x] 🌈 Smooth animations and intuitive drag-and-drop interface
 - [x] 🔢 Multiple difficulty levels (1, 2, or 4 suits)
 - [x] ⏱️ Time and move tracking
+- [ ] 💡 Hints
+- [ ] 👆 Tap to move
+- [ ] 🌄 Landscape & macOS support
 - [ ] 🏆 Score calculation
 - [ ] 💾 Game state persistence
 - [ ] 🎨 Customizable card designs
