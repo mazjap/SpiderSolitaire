@@ -1,29 +1,6 @@
 import Foundation
 import Combine
 
-enum AnimationLayerDrawAction {
-  case `do`([Card])
-  case undo([Card])
-}
-
-enum AnimationLayerCompleteSetAction {
-  case `do`([Card])
-  case undo([Card], index: Int)
-}
-
-enum CardActionError: Error {
-  case noDrawsAvailable
-  case noPreviousMovesAvailable
-  case attemptedDrawButNoCardsOnStack(index: Int)
-}
-
-struct AnimationLayerState {
-  var inProgressDraw: [Card]?
-  var inProgressSet: [Card]?
-  var drawCount: Int
-  var completedSetCount: Int
-}
-
 @MainActor
 @Observable
 class GameViewModel {
