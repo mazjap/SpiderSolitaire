@@ -1,12 +1,12 @@
 import Foundation
 
-enum Move: Equatable {
+enum Move: Hashable {
   case draw(id: UUID)
   case move(columnIndex: UInt8, cardCount: UInt8, destinationIndex: UInt8, didRevealCard: Bool)
   case completedSet(columnIndex: UInt8, didRevealCard: Bool)
 }
 
-struct GameState: Equatable {
+struct GameState: Hashable {
   var completedSets: [CompletedSet]
   var draws: [Draw]
   var previousMoves: [Move]
