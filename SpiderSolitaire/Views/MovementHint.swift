@@ -24,10 +24,11 @@ struct MovementHint: View {
   }
   
   private var toOffset: CGPoint {
-    let offset = height / 3
     let halfCurrentStackHeight = cardStackFrame.height / 2
+    let topPadding = halfCurrentStackHeight + (height / 2)
+    let offset = height / 3
     
-    return CGPoint(x: toFrame.midX, y: toFrame.maxY + halfCurrentStackHeight - height + offset)
+    return CGPoint(x: toFrame.midX, y: toFrame.maxY + halfCurrentStackHeight - topPadding + offset)
   }
   
   init(fromFrame: CGRect, cards: [Card], toFrame: CGRect, width: Double, height: Double) {
