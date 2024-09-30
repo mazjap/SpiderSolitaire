@@ -140,7 +140,24 @@ extension GameView {
       Spacer()
       
       Button {
-        // TODO: - Implement hints
+        Task {
+          do {
+            let movesBeforeHints = model.state.moveCount
+            model.calculateHints()
+            for hint in model.hintsForHashValue?.hints ?? [] {
+              guard movesBeforeHints == model.state.moveCount else { return }
+              
+              withAnimation(.linear(duration: 1)) {
+                model.display(hint: hint)
+              }
+              
+              try await Task.sleep(for: .seconds(1.125))
+              model.clearHint()
+            }
+          } catch {
+            print(error)
+          }
+        }
       } label: {
         VStack {
           Image(systemName: "lightbulb.max.fill")
@@ -155,7 +172,7 @@ extension GameView {
       
       Spacer()
       
-      #if DEBUG
+#if DEBUG
       Button {
         debugPrint(gameState: model.state)
       } label: {
@@ -170,7 +187,7 @@ extension GameView {
       }
       
       Spacer()
-      #endif
+#endif
       
       Button {
         areNewGameOptionsShown.toggle()

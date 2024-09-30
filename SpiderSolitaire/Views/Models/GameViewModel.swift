@@ -66,6 +66,40 @@ extension GameViewModel {
     currentHint = nil
   }
   
+  func calculateHints() {
+    let newHash = state.hashValue
+    guard hintsForHashValue?.hash != newHash else { return }
+    
+    var hints = [Hint]()
+    //    var brokenUpCompletedSets = [(from: Int, index: Int, to: Int)]() TODO: - Broken up completed sets
+    var freeSpaceColumns = [Int]()
+    
+    // FIXME: - O(n^2), perhaps two seperate loops, first adding bottom card to dict ([Card.Value : [ColumnIndex]]), second comparing card at validity index to dictionary's values
+    for columnIndex in 0..<10 {
+      let stack = self[columnIndex]
+      guard !stack.isEmpty else {
+        freeSpaceColumns.append(columnIndex)
+        continue
+      }
+      
+      let cardToMove = stack[stack.validityIndex]
+      
+      let range = Array(0..<columnIndex) + (columnIndex == 9 ? [] : Array((columnIndex + 1)..<10))
+      for columnIndexToCompare in range {
+        if let cardToCompare = self[columnIndexToCompare].cards.last,
+           cardToCompare.suit == cardToMove.suit,
+           cardToCompare.value == cardToMove.value.larger {
+          hints.append(.move(columnIndex: columnIndex, validityIndex: stack.validityIndex, destinationColumnIndex: columnIndexToCompare))
+        }
+      }
+    }
+    
+    //    hints.append(contentsOf: brokenUpCompletedSets.map { Hint.move(columnIndex: $0.from, validityIndex: $0.index, destinationColumnIndex: $0.to) })
+    hints.append(contentsOf: freeSpaceColumns.map { Hint.moveAnyToFreeSpace(freeSpaceIndex: $0) })
+    
+    hintsForHashValue = (newHash, hints)
+  }
+  
   func revealTopCardsInAllColumns() {
     state.mutateColumns { column in
       guard !column.cards.isEmpty else { return }
