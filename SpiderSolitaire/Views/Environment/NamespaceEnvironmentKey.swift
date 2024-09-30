@@ -1,14 +1,14 @@
 import SwiftUI
 
 struct NamespaceEnvironmentKey: EnvironmentKey {
-    static let defaultValue: Namespace.ID? = nil
+  static let defaultValue: Namespace.ID? = nil
 }
 
 extension EnvironmentValues {
-    var namespace: Namespace.ID? {
-        get { self[NamespaceEnvironmentKey.self] }
-        set { self[NamespaceEnvironmentKey.self] = newValue }
-    }
+  var namespace: Namespace.ID? {
+    get { self[NamespaceEnvironmentKey.self] }
+    set { self[NamespaceEnvironmentKey.self] = newValue }
+  }
 }
 
 extension View {
