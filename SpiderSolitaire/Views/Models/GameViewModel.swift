@@ -194,8 +194,13 @@ extension GameViewModel {
   }
   
   func makeFirstAvailableMove(for columnIndex: Int, cardIndex: Int) -> (from: Int, to: Int)? {
-    let cardToMove = self[columnIndex][cardIndex]
-    guard let neededCardValue = cardToMove.value.larger else {
+    let cardStack = self[columnIndex]
+    let cardToMove = cardStack[cardIndex]
+    
+    guard cardToMove.isVisible else { return nil }
+    
+    guard cardStack.validityIndex <= cardIndex,
+          let neededCardValue = cardToMove.value.larger else {
       cardToJiggleId = cardToMove.id
       Task {
         try? await Task.sleep(for: .seconds(0.5))

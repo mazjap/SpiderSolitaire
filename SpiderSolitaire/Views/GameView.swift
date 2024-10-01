@@ -306,7 +306,7 @@ extension GameView {
       let cardStack = model[columnNum]
       
       let zIndex: Double = {
-        if [draggingColumn, movingColumns?.from, movingColumns?.to].compactMap { $0 }.contains(columnNum) {
+        if [draggingColumn, movingColumns?.from, movingColumns?.to].compactMap({ $0 }).contains(columnNum) {
           return 1
         }
         
