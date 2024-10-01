@@ -18,7 +18,7 @@ struct SpiderSolitaireApp: App {
   
   var body: some Scene {
     WindowGroup {
-      GameView(gameState: .init(suits: .oneSuit))
+      GameView(gameState: .completedSetHalves)
     }
     .modelContainer(sharedModelContainer)
   }

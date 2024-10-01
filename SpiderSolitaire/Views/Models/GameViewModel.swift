@@ -193,7 +193,7 @@ extension GameViewModel {
     return false
   }
   
-  func makeFirstAvailableMove(for columnIndex: Int, cardIndex: Int) {
+  func makeFirstAvailableMove(for columnIndex: Int, cardIndex: Int) -> (from: Int, to: Int)? {
     let cardToMove = self[columnIndex][cardIndex]
     guard let neededCardValue = cardToMove.value.larger else {
       cardToJiggleId = cardToMove.id
@@ -202,16 +202,24 @@ extension GameViewModel {
         guard cardToJiggleId == cardToMove.id else { return }
         cardToJiggleId = nil
       }
-      return
+      return nil
     }
     
     for columnToCompare in (0..<10).filter({ $0 != columnIndex }) {
-      if let lastCard = self[columnToCompare].cards.last,
-         lastCard.value == neededCardValue {
+      let lastCard = self[columnToCompare].cards.last
+      if lastCard == nil || lastCard!.value == neededCardValue {
         _ = moveCards(fromColumn: columnIndex, cardIndex: cardIndex, toColumn: columnToCompare)
-        return
+        return (columnIndex, columnToCompare)
       }
     }
+    
+    cardToJiggleId = cardToMove.id
+    Task {
+      try? await Task.sleep(for: .seconds(0.5))
+      guard cardToJiggleId == cardToMove.id else { return }
+      cardToJiggleId = nil
+    }
+    return nil
   }
 
   
