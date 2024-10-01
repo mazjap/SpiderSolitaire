@@ -7,6 +7,7 @@ struct GameView: View {
   @State private var drawStackFrame = CGRect.zero
   @State private var completedSetsFrame = CGRect.zero
   @State private var areNewGameOptionsShown = false
+  @State private var movingColumns: (from: Int, to: Int)?
   @Namespace private var namespace
   @ScaledMetric private var controlImageSize = Double(30)
   
@@ -304,6 +305,14 @@ extension GameView {
     ForEach(Array($cardStackFrames.enumerated()), id: \.offset) { (columnNum, frame) in
       let cardStack = model[columnNum]
       
+      let zIndex: Double = {
+        if [draggingColumn, movingColumns?.from, movingColumns?.to].compactMap { $0 }.contains(columnNum) {
+          return 1
+        }
+        
+        return 0
+      }()
+      
       CardStackView(cardStack: cardStack, frame: frame, cardWidth: width, cardHeight: height) {
         draggingColumn = columnNum
       } onDragEnd: { draggingCardIndex, frame in
@@ -326,11 +335,22 @@ extension GameView {
         
         return shouldAnimateReturn
       } onCardTapped: { cardIndex in
-        withAnimation(.easeInOut(duration: 0.5)) {
-          model.makeFirstAvailableMove(for: columnNum, cardIndex: cardIndex)
+        Task {
+          let cols = withAnimation(.easeInOut(duration: 0.5)) {
+            model.makeFirstAvailableMove(for: columnNum, cardIndex: cardIndex)
+          }
+          
+          if let cols {
+            movingColumns = cols
+            try? await Task.sleep(for: .seconds(0.5))
+            if let currentCols = movingColumns,
+               currentCols == cols {
+              movingColumns = nil
+            }
+          }
         }
       }
-      .zIndex(draggingColumn == columnNum ? 1 : 0)
+      .zIndex(zIndex)
     }
     .transition(.offset(.zero))
   }
