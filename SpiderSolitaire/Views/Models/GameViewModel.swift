@@ -194,13 +194,15 @@ extension GameViewModel {
   }
   
   func makeFirstAvailableMove(for columnIndex: Int, cardIndex: Int) -> (from: Int, to: Int)? {
+    #warning("TODO: - Fix bug where occasionally a move will be selected that is not the best, a jack will move to a single queen, when there's a king queen stack that would be better")
     let cardStack = self[columnIndex]
     let cardToMove = cardStack[cardIndex]
     
     guard cardToMove.isVisible else { return nil }
     
-    guard cardStack.validityIndex <= cardIndex,
-          let neededCardValue = cardToMove.value.larger else {
+    let neededCardValue = cardToMove.value.larger
+    
+    guard cardStack.validityIndex <= cardIndex else {
       cardToJiggleId = cardToMove.id
       Task {
         try? await Task.sleep(for: .seconds(0.5))
@@ -210,21 +212,54 @@ extension GameViewModel {
       return nil
     }
     
+    var freeSpaces = [Int]()
+    var goodMoves = [Int]()
+    
     for columnToCompare in (0..<10).filter({ $0 != columnIndex }) {
-      let lastCard = self[columnToCompare].cards.last
-      if lastCard == nil || lastCard!.value == neededCardValue {
-        _ = moveCards(fromColumn: columnIndex, cardIndex: cardIndex, toColumn: columnToCompare)
-        return (columnIndex, columnToCompare)
+      if let lastCard = self[columnToCompare].cards.last {
+        if lastCard.value == neededCardValue {
+          goodMoves.append(columnToCompare)
+        }
+      } else {
+        // Immediately move to free space if cardToMove is a king
+        if neededCardValue == nil {
+          _ = moveCards(fromColumn: columnIndex, cardIndex: cardIndex, toColumn: columnToCompare)
+          return (columnIndex, columnToCompare)
+        }
+        // Otherwise, just handle normally
+        freeSpaces.append(columnToCompare)
       }
     }
     
-    cardToJiggleId = cardToMove.id
-    Task {
-      try? await Task.sleep(for: .seconds(0.5))
-      guard cardToJiggleId == cardToMove.id else { return }
-      cardToJiggleId = nil
+    if goodMoves.isEmpty {
+      if freeSpaces.isEmpty {
+        cardToJiggleId = cardToMove.id
+        Task {
+          try? await Task.sleep(for: .seconds(0.5))
+          guard cardToJiggleId == cardToMove.id else { return }
+          cardToJiggleId = nil
+        }
+        
+        return nil
+      } else {
+        let freeSpaceIndex = freeSpaces[0]
+        _ = moveCards(fromColumn: columnIndex, cardIndex: cardIndex, toColumn: freeSpaceIndex)
+        return (columnIndex, freeSpaceIndex)
+      }
+    } else {
+      var bestMove = (columnIndex: 0, validCardCount: 0)
+      
+      for columnIndexToCheck in goodMoves {
+        let stack = self[columnIndexToCheck]
+        let validCardCount = (stack.cards.count - bestMove.validCardCount)
+        if validCardCount > bestMove.validCardCount {
+          bestMove = (columnIndexToCheck, validCardCount)
+        }
+      }
+      
+      _ = moveCards(fromColumn: columnIndex, cardIndex: cardIndex, toColumn: bestMove.columnIndex)
+      return (columnIndex, bestMove.columnIndex)
     }
-    return nil
   }
 
   
