@@ -3,7 +3,9 @@ import SwiftUI
 struct CardView: View {
   @State private var flipRotation: Double
   @State private var isVisuallyFlipped: Bool
+  @State private var jiggleAttempts = 0
   
+  @Environment(\.jiggleId) private var jiggleId
   @Environment(\.namespace) private var animationNamespace
   @Namespace private var fallbacknspace
   
@@ -53,6 +55,7 @@ struct CardView: View {
       }
     }
     .rotation3DEffect(.degrees(flipRotation - (isVisuallyFlipped ? 180 : 0)), axis: (x: 0, y: 1, z: 0))
+    .modifier(JiggleEffect(animatableData: jiggleId == cardData.card.id ? 1 : 0))
     .transition(.offset(.zero))
     .matchedGeometryEffect(id: cardData.card.id, in: namespace)
     .onChange(of: cardData.card.isVisible) {
@@ -150,9 +153,12 @@ struct CardView: View {
   }
 }
 
+let cardPreviewId = UUID()
+
 #Preview {
-  @Previewable @State var flippableCard = Card(value: .ten, suit: .spade, isVisible: false)
+  @Previewable @State var flippableCard = Card(value: .ten, suit: .spade, id: cardPreviewId, isVisible: false)
   @Previewable @State var isUsable = true
+  @Previewable @State var shouldJiggle = false
   
   VStack(spacing: 6) {
     let width: Double = 70
@@ -172,6 +178,7 @@ struct CardView: View {
     
     HStack {
       CardView(for: flippableCard, width: width, height: height, isUsable: isUsable)
+        .jiggle(id: shouldJiggle ? cardPreviewId : nil)
       
       VStack {
         Button("Flip card") {
@@ -180,6 +187,12 @@ struct CardView: View {
         
         Button("Toggle Usable") {
           isUsable.toggle()
+        }
+        
+        Button("Toggle Jiggle") {
+          withAnimation {
+            shouldJiggle.toggle()
+          }
         }
       }
     }

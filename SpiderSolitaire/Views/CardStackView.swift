@@ -10,14 +10,14 @@ struct CardStackView: View {
   private let cardWidth: Double
   private let cardHeight: Double
   
-  private let cardShape = RoundedRectangle(cornerRadius: 4)
-  
   private let onDragEnd: (Int, CGRect) -> Bool
   private let onDragStart: () -> Void
+  private let onCardTapped: (Int) -> Void
   
+  private let cardShape = RoundedRectangle(cornerRadius: 4)
   private let offsets: [Double]
   
-  init(cardStack: CardStack, frame: Binding<CGRect>, cardWidth: Double, cardHeight: Double, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGRect) -> Bool) {
+  init(cardStack: CardStack, frame: Binding<CGRect>, cardWidth: Double, cardHeight: Double, onDragStart: @escaping () -> Void, onDragEnd: @escaping (Int, CGRect) -> Bool, onCardTapped: @escaping (Int) -> Void) {
     self.cardStack = cardStack
     self._frame = frame
     self.cardWidth = cardWidth
@@ -25,6 +25,7 @@ struct CardStackView: View {
     
     self.onDragStart = onDragStart
     self.onDragEnd = onDragEnd
+    self.onCardTapped = onCardTapped
     
     let visibleOffset = cardHeight / 3
     let hiddenOffset = cardHeight / 10
@@ -67,6 +68,9 @@ struct CardStackView: View {
             
             CardView(for: card, width: cardWidth, height: cardHeight, isUsable: isUsable)
               .offset(offset)
+              .onTapGesture {
+                onCardTapped(index)
+              }
               .gesture(DragGesture(coordinateSpace: .global)
                 .onChanged { value in
                   if let relativePoint = currentDragInfo?.pointRelativeToOrigin {
@@ -155,6 +159,8 @@ extension CardStackView {
       print("Card(s) dragged")
     } onDragEnd: { card, offset in
       return true
+    } onCardTapped: { index in
+      print("Card at position \(index) tapped")
     }
     
     Button("Add Card") {

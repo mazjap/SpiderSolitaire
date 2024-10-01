@@ -14,6 +14,7 @@ class GameViewModel {
   private(set) var hintsForHashValue: (hash: Int, hints: [Hint])?
   private var inProgressDraw: [Card]?
   private var inProgressSet: [Card]?
+  private(set) var cardToJiggleId: UUID?
   
   var drawCount: Int {
     state.draws.count
@@ -191,6 +192,28 @@ extension GameViewModel {
     incrementMoves()
     return false
   }
+  
+  func makeFirstAvailableMove(for columnIndex: Int, cardIndex: Int) {
+    let cardToMove = self[columnIndex][cardIndex]
+    guard let neededCardValue = cardToMove.value.larger else {
+      cardToJiggleId = cardToMove.id
+      Task {
+        try? await Task.sleep(for: .seconds(0.5))
+        guard cardToJiggleId == cardToMove.id else { return }
+        cardToJiggleId = nil
+      }
+      return
+    }
+    
+    for columnToCompare in (0..<10).filter({ $0 != columnIndex }) {
+      if let lastCard = self[columnToCompare].cards.last,
+         lastCard.value == neededCardValue {
+        _ = moveCards(fromColumn: columnIndex, cardIndex: cardIndex, toColumn: columnToCompare)
+        return
+      }
+    }
+  }
+
   
   func startTimer() {
     guard timerCancellable == nil else { return }

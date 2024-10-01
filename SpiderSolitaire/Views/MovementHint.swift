@@ -42,12 +42,12 @@ struct MovementHint: View {
   var body: some View {
     ZStack {
       if isAtDesination {
-        CardStackView(cardStack: CardStack(cards: cards, validityIndex: -1), frame: $cardStackFrame, cardWidth: width, cardHeight: height, onDragStart: {}, onDragEnd: {_,_ in false})
+        CardStackView(cardStack: CardStack(cards: cards, validityIndex: -1), frame: $cardStackFrame, cardWidth: width, cardHeight: height, onDragStart: {}, onDragEnd: {_,_ in false}, onCardTapped: {_ in})
           .opacity(0.75)
           .position(toOffset)
           .matchedGeometryEffect(id: cards.map(\.id.uuidString).joined(), in: namespace)
       } else {
-        CardStackView(cardStack: CardStack(cards: cards, validityIndex: -1), frame: $cardStackFrame, cardWidth: width, cardHeight: height, onDragStart: {}, onDragEnd: {_,_ in false})
+        CardStackView(cardStack: CardStack(cards: cards, validityIndex: -1), frame: $cardStackFrame, cardWidth: width, cardHeight: height, onDragStart: {}, onDragEnd: {_,_ in false}, onCardTapped: {_ in})
           .opacity(0.75)
           .position(fromOffset)
           .matchedGeometryEffect(id: cards.map(\.id.uuidString).joined(), in: namespace)

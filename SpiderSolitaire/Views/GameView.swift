@@ -78,6 +78,7 @@ struct GameView: View {
       }
     }
     .namespace(namespace)
+    .jiggle(id: model.cardToJiggleId)
     .onAppear {
       onGameStart()
     }
@@ -324,6 +325,10 @@ extension GameView {
         }
         
         return shouldAnimateReturn
+      } onCardTapped: { cardIndex in
+        withAnimation(.easeInOut(duration: 0.5)) {
+          model.makeFirstAvailableMove(for: columnNum, cardIndex: cardIndex)
+        }
       }
       .zIndex(draggingColumn == columnNum ? 1 : 0)
     }
