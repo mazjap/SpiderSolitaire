@@ -6,20 +6,39 @@
 - [x] 🌈 Smooth animations and intuitive drag-and-drop interface
 - [x] 🔢 Multiple difficulty levels (1, 2, or 4 suits)
 - [x] ⏱️ Time and move tracking
-- [ ] 💡 Hints
-- [ ] 👆 Tap to move
-- [ ] 🌄 Landscape & macOS support
+- [x] 💡 Hints
+- [x] 👆 Tap to move
 - [ ] 🏆 Score calculation
 - [ ] 💾 Game state persistence
+- [ ] 🌄 Landscape & macOS support
+- [ ] 🎆 Win animation
 - [ ] 🎨 Customizable card designs
+
 
 ## Screenshots
 
-<p float="left">
-  <img src="./src/start.png" width="30%" />
-  <img src="./src/card_flip.gif" width="30%" /> 
-  <img src="./src/undo.gif" width="30%" />
-</p>
+<table>
+    <tr>
+        <td width="30%">Start</td>
+        <td width="30%">Card Movement</td>
+        <td width="30%">Undo</td>
+    </tr>
+    <tr>
+        <td width="30%"><img src="./src/initial_game.png" alt="Cards layed out in 10 columns, with only the top-most cards revealed" /></td>
+        <td width="30%"><img src="./src/drag_and_tap.gif" alt="Cards being dragged or tapped from one column to another, flipping the subsequent card in the stack that was pulled from" /></td>
+        <td width="30%"><img src="./src/undo.gif" alt="Cards being returned to their previous position, via an undo button" /></td>
+    </tr>
+    <tr>
+        <td width="30%">Draw</td>
+        <td width="30%">Hint</td>
+        <td width="30%">Complete Set</td>
+    </tr>
+    <tr>
+        <td width="30%"><img src="./src/draw.gif" alt="" /></td>
+        <td width="30%"><img src="./src/hint.gif" alt="" /></td>
+        <td width="30%"><img src="./src/complete_set.gif" alt="" /></td>
+    </tr>
+</table>
 
 ## Requirements
 
@@ -31,7 +50,7 @@ Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/spider-solitaire.git
+git clone https://github.com/mazjap/spider-solitaire.git
 ```
 
 2. Open the project in Xcode:
